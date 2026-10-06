@@ -53,7 +53,15 @@ export function RequestListPage() {
   return (
     <section>
       <header className="page-header">
-        <h1>{user?.role === "USER" ? "Mis solicitudes" : "Solicitudes"}</h1>
+        <div>
+          <p className="eyebrow">Seguimiento</p>
+          <h1>{user?.role === "USER" ? "Mis solicitudes" : "Solicitudes del campus"}</h1>
+          <p className="lede">
+            {user?.role === "USER"
+              ? "Solo ves las que tú enviaste. Abre el título para seguir el recorrido."
+              : "Abre el título para asignar, comentar o cambiar el estado."}
+          </p>
+        </div>
         {user?.role === "USER" && (
           <Link className="button-link" to="/solicitudes/nueva">
             Nueva solicitud
@@ -115,7 +123,9 @@ export function RequestListPage() {
                   <td data-label="Código">
                     <Link to={`/solicitudes/${item.id}`}>{item.code}</Link>
                   </td>
-                  <td data-label="Título">{item.title}</td>
+                  <td data-label="Título">
+                    <Link to={`/solicitudes/${item.id}`}>{item.title}</Link>
+                  </td>
                   <td data-label="Categoría">{item.category.name}</td>
                   <td data-label="Estado">
                     <StatusBadge status={item.status} />

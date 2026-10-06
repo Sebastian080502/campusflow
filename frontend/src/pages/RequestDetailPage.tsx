@@ -3,7 +3,9 @@ import { useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { AssigneeOption, RequestDetail, RequestStatus } from "../api/types";
 import { StatusBadge } from "../components/StatusBadge";
-import { STATUS_ACTION, formatWhen } from "../domain/labels";
+import { STATUS_ACTION, STATUS_LABEL, formatWhen } from "../domain/labels";
+
+const PATH: RequestStatus[] = ["PENDING", "IN_REVIEW", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 export function RequestDetailPage() {
   const { id } = useParams();
@@ -92,6 +94,21 @@ export function RequestDetailPage() {
         <StatusBadge status={request.status} />
       </header>
       <p>{request.description}</p>
+      {request.status === "CANCELLED" ? (
+        <p className="field-note">Esta solicitud se canceló y ya no continúa el recorrido.</p>
+      ) : (
+        <ol className="stepper" aria-label="Recorrido de la solicitud">
+          {PATH.map((status, index) => {
+            const current = PATH.indexOf(request.status);
+            const state = index < current ? "done" : index === current ? "current" : "";
+            return (
+              <li key={status} className={state} aria-current={state === "current" ? "step" : undefined}>
+                {STATUS_LABEL[status]}
+              </li>
+            );
+          })}
+        </ol>
+      )}
       <dl className="meta">
         <div>
           <dt>Categoría</dt>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { Category } from "../api/types";
+import { CategoryMark } from "../components/CampusArt";
 
 export function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,7 +55,15 @@ export function CategoriesPage() {
 
   return (
     <section>
-      <h1>Categorías</h1>
+      <header className="page-header">
+        <div>
+          <p className="eyebrow">Campus</p>
+          <h1>Categorías</h1>
+          <p className="lede">
+            Cada solicitud nace en una categoría activa. Si la apagas, deja de aparecer al crear una nueva.
+          </p>
+        </div>
+      </header>
       {error && (
         <p className="alert" role="alert">
           {error}
@@ -77,9 +86,12 @@ export function CategoriesPage() {
       <ul className="category-list">
         {categories.map((category) => (
           <li key={category.id}>
-            <div>
-              <strong>{category.name}</strong>
-              <p>{category.description}</p>
+            <div className="category-title">
+              <CategoryMark name={category.name} />
+              <div>
+                <strong>{category.name}</strong>
+                <p>{category.description}</p>
+              </div>
             </div>
             <button
               type="button"

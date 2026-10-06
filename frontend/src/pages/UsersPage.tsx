@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { PublicUser, Role } from "../api/types";
+import { PasswordField } from "../components/PasswordField";
 import { ROLE_LABEL } from "../domain/labels";
 
 const ROLES: Role[] = ["USER", "STAFF", "ADMIN"];
@@ -75,10 +76,12 @@ export function UsersPage() {
           Correo
           <input name="email" type="email" required />
         </label>
-        <label>
-          Contraseña temporal
-          <input name="password" type="password" required minLength={8} />
-        </label>
+        <PasswordField
+          name="password"
+          label="Contraseña temporal"
+          autoComplete="new-password"
+          minLength={8}
+        />
         <label>
           Rol
           <select name="role" defaultValue="STAFF">

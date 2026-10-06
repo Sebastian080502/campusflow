@@ -1,6 +1,8 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { CampusScene } from "../components/CampusArt";
+import { PasswordField } from "../components/PasswordField";
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -35,11 +37,13 @@ export function RegisterPage() {
   return (
     <section className="auth-screen">
       <div className="auth-hero">
+        <CampusScene />
         <p className="eyebrow">CampusFlow</p>
         <h1>Abre tu cuenta y deja la solicitud en marcha.</h1>
         <p>El registro público crea solo cuentas de estudiante. El personal lo habilita un administrador.</p>
       </div>
       <form className="card auth-card" onSubmit={onSubmit}>
+        <CampusScene compact />
         <p className="brand">Crear cuenta</p>
         <p>Usa un correo que todavía no esté registrado.</p>
         <label>
@@ -50,10 +54,13 @@ export function RegisterPage() {
           Correo
           <input name="email" type="email" autoComplete="email" required />
         </label>
-        <label>
-          Contraseña
-          <input name="password" type="password" autoComplete="new-password" required minLength={8} />
-        </label>
+        <PasswordField
+          name="password"
+          label="Contraseña"
+          autoComplete="new-password"
+          minLength={8}
+        />
+        <p className="field-note">Mínimo 8 caracteres. Puedes mostrarla para revisarla antes de crear la cuenta.</p>
         {error && (
           <p className="alert" role="alert">
             {error}

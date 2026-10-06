@@ -10,6 +10,15 @@ export const STATUS_LABEL: Record<RequestStatus, string> = {
   CANCELLED: "Cancelada",
 };
 
+export const STATUS_HINT: Record<RequestStatus, string> = {
+  PENDING: "Acaba de llegar y todavía no tiene responsable.",
+  IN_REVIEW: "Alguien ya la tomó y está mirando el caso.",
+  IN_PROGRESS: "El responsable está trabajando en la respuesta.",
+  RESOLVED: "Hay una respuesta. Quien la pidió puede cerrarla.",
+  CLOSED: "Terminó. El historial queda guardado.",
+  CANCELLED: "Quien la creó la retiró antes de seguir.",
+};
+
 export const ROLE_LABEL = {
   USER: "Estudiante",
   STAFF: "Personal encargado",
