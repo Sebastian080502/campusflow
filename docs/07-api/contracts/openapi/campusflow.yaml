@@ -1,0 +1,547 @@
+openapi: 3.0.3
+info:
+  title: CampusFlow API
+  version: 0.1.0
+  description: API del monolito CampusFlow para solicitudes universitarias.
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/health:
+    get:
+      summary: Salud de la API y de PostgreSQL
+      security: []
+      responses:
+        "200":
+          description: La base respondio
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /api/auth/register:
+    post:
+      summary: Registro publico. Crea solo el rol USER.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+      responses:
+        "201":
+          description: Sesion creada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/auth/login:
+    post:
+      summary: Ingreso. Responde 200.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        "200":
+          description: Sesion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          $ref: "#/components/responses/Error"
+  /api/auth/me:
+    get:
+      summary: Usuario de la sesion
+      responses:
+        "200":
+          description: Perfil publico
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUser"
+  /api/users:
+    get:
+      summary: Lista usuarios. Solo ADMIN.
+      responses:
+        "200":
+          description: Usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicUser"
+        "403":
+          $ref: "#/components/responses/Error"
+    post:
+      summary: Crea usuario con rol explicito. Solo ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUser"
+      responses:
+        "201":
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUser"
+  /api/users/assignees:
+    get:
+      summary: Responsables activos STAFF o ADMIN
+      responses:
+        "200":
+          description: Opciones de asignacion
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assignee"
+  /api/users/{id}:
+    patch:
+      summary: Cambia nombre, rol o actividad. Solo ADMIN.
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUser"
+      responses:
+        "200":
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUser"
+  /api/categories:
+    get:
+      summary: Categorias. Quien no es ADMIN solo ve las activas.
+      responses:
+        "200":
+          description: Categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      summary: Crea categoria. Solo ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategory"
+      responses:
+        "201":
+          description: Categoria creada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /api/categories/{id}:
+    patch:
+      summary: Edita categoria. Solo ADMIN.
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategory"
+      responses:
+        "200":
+          description: Categoria actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /api/requests/summary:
+    get:
+      summary: Conteos por estado, respetando la visibilidad del rol
+      responses:
+        "200":
+          description: Resumen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+  /api/requests:
+    get:
+      summary: Bandeja paginada. USER solo ve las suyas.
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/RequestStatus"
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+        - in: query
+          name: assigneeId
+          schema:
+            type: string
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Pagina
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestPage"
+    post:
+      summary: Crea solicitud. Solo USER. Responde 201.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequest"
+      responses:
+        "201":
+          description: Detalle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "403":
+          $ref: "#/components/responses/Error"
+  /api/requests/{id}:
+    get:
+      summary: Detalle si el actor puede ver la solicitud
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Detalle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      summary: Asigna responsable o cambia el estado
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: "#/components/schemas/RequestStatus"
+                assigneeId:
+                  type: string
+      responses:
+        "200":
+          description: Detalle actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+        "403":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/requests/{id}/comments:
+    post:
+      summary: Comentario. Prohibido en CLOSED y CANCELLED.
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+      responses:
+        "201":
+          description: Detalle con el comentario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDetail"
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+  responses:
+    Error:
+      description: Error de la API
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+    Role:
+      type: string
+      enum: [USER, STAFF, ADMIN]
+    RequestStatus:
+      type: string
+      enum: [PENDING, IN_REVIEW, IN_PROGRESS, RESOLVED, CLOSED, CANCELLED]
+    PublicUser:
+      type: object
+      required: [id, fullName, email, role, active]
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        active:
+          type: boolean
+    Session:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken:
+          type: string
+        user:
+          $ref: "#/components/schemas/PublicUser"
+    Register:
+      type: object
+      required: [fullName, email, password]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    CreateUser:
+      allOf:
+        - $ref: "#/components/schemas/Register"
+        - type: object
+          required: [role]
+          properties:
+            role:
+              $ref: "#/components/schemas/Role"
+    UpdateUser:
+      type: object
+      properties:
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        active:
+          type: boolean
+    Assignee:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateCategory:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    UpdateCategory:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        active:
+          type: boolean
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+    RequestSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        category:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        requester:
+          $ref: "#/components/schemas/Person"
+        assignee:
+          allOf:
+            - $ref: "#/components/schemas/Person"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RequestDetail:
+      allOf:
+        - $ref: "#/components/schemas/RequestSummary"
+        - type: object
+          properties:
+            description:
+              type: string
+            capabilities:
+              type: object
+              properties:
+                canAssign:
+                  type: boolean
+                canComment:
+                  type: boolean
+                statuses:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/RequestStatus"
+            comments:
+              type: array
+              items:
+                type: object
+            history:
+              type: array
+              items:
+                type: object
+    RequestPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestSummary"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    Summary:
+      type: object
+      properties:
+        total:
+          type: integer
+        byStatus:
+          type: object
+          additionalProperties:
+            type: integer
+    CreateRequest:
+      type: object
+      required: [title, description, categoryId]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        categoryId:
+          type: string
+security:
+  - bearer: []
