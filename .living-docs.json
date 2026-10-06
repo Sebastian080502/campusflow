@@ -1,0 +1,101 @@
+{
+  "docsRoot": "docs",
+  "requireDocsRootChange": true,
+  "surfaces": {
+    "backend": {
+      "code": [
+        "backend/**",
+        "server/**",
+        "api/**",
+        "apps/api/**",
+        "apps/backend/**",
+        "services/**",
+        "src/api/**",
+        "src/server/**",
+        "src/modules/**",
+        "src/controllers/**",
+        "src/routes/**",
+        "**/openapi/**",
+        "**/graphql/**"
+      ],
+      "docs": [
+        "docs/07-api/**",
+        "docs/09-microservices/**",
+        "docs/05-architecture/**"
+      ]
+    },
+    "frontend": {
+      "code": [
+        "frontend/**",
+        "web/**",
+        "client/**",
+        "apps/web/**",
+        "apps/frontend/**",
+        "src/components/**",
+        "src/pages/**",
+        "src/app/**",
+        "src/views/**",
+        "src/layouts/**",
+        "src/hooks/**"
+      ],
+      "docs": [
+        "docs/12-ux-ui/**",
+        "docs/07-api/**",
+        "docs/14-training/**"
+      ]
+    },
+    "database": {
+      "code": [
+        "**/migrations/**",
+        "**/prisma/**",
+        "**/alembic/**",
+        "**/drizzle/**",
+        "**/typeorm/**",
+        "**/*schema*.sql",
+        "**/*.prisma",
+        "db/**",
+        "database/**",
+        "supabase/migrations/**"
+      ],
+      "docs": [
+        "docs/06-data/**",
+        "docs/09-microservices/**"
+      ]
+    },
+    "devops": {
+      "code": [
+        ".github/workflows/**",
+        "Dockerfile*",
+        "docker-compose*.yml",
+        "docker-compose*.yaml",
+        "infra/**",
+        "terraform/**",
+        "k8s/**",
+        "helm/**"
+      ],
+      "docs": [
+        "docs/10-devops/**",
+        "docs/13-operations/**"
+      ]
+    }
+  },
+  "ignore": [
+    "**/*.lock",
+    "**/package-lock.json",
+    "**/pnpm-lock.yaml",
+    "**/yarn.lock",
+    "**/composer.lock",
+    "**/*.min.js",
+    "**/*.min.css",
+    "**/.DS_Store",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.gif",
+    "**/*.webp",
+    "**/*.ico"
+  ]
+}
