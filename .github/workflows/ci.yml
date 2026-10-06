@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, qa, main]
+  pull_request:
+
+jobs:
+  verify:
+    name: Pruebas unitarias y build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar API
+        working-directory: backend
+        run: npm ci
+      - name: Generar cliente Prisma
+        working-directory: backend
+        env:
+          # Job-only placeholder. Prisma generate does not connect and this is not a reusable password.
+          DATABASE_URL: postgresql://campusflow:ci-job-only@localhost:5432/campusflow
+        run: npx prisma generate
+      - name: Pruebas unitarias de la API
+        working-directory: backend
+        run: npm test
+      - name: Construir API
+        working-directory: backend
+        run: npm run build
+      - name: Instalar cliente web
+        working-directory: frontend
+        run: npm ci
+      - name: Pruebas del cliente
+        working-directory: frontend
+        run: npm test
+      - name: Construir cliente
+        working-directory: frontend
+        run: npm run build
