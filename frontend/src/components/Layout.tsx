@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { NavIcon } from "./CampusArt";
 import { ROLE_LABEL } from "../domain/labels";
 import { useAuth } from "../auth/AuthContext";
 
@@ -22,12 +23,31 @@ export function Layout() {
         </div>
         <nav className="nav">
           <NavLink to="/" end>
+            <NavIcon name="home" />
             Inicio
           </NavLink>
-          <NavLink to="/solicitudes">Solicitudes</NavLink>
-          {user.role === "USER" && <NavLink to="/solicitudes/nueva">Nueva solicitud</NavLink>}
-          {user.role === "ADMIN" && <NavLink to="/usuarios">Usuarios</NavLink>}
-          {user.role === "ADMIN" && <NavLink to="/categorias">Categorías</NavLink>}
+          <NavLink to="/solicitudes">
+            <NavIcon name="list" />
+            Solicitudes
+          </NavLink>
+          {user.role === "USER" && (
+            <NavLink to="/solicitudes/nueva">
+              <NavIcon name="plus" />
+              Nueva solicitud
+            </NavLink>
+          )}
+          {user.role === "ADMIN" && (
+            <NavLink to="/usuarios">
+              <NavIcon name="users" />
+              Usuarios
+            </NavLink>
+          )}
+          {user.role === "ADMIN" && (
+            <NavLink to="/categorias">
+              <NavIcon name="tags" />
+              Categorías
+            </NavLink>
+          )}
         </nav>
         <div className="sidebar-foot">
           <p className="who">{user.fullName}</p>
