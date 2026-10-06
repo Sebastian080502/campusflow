@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Category, RequestPage, RequestStatus } from "../api/types";
 import { StatusBadge } from "../components/StatusBadge";
@@ -8,12 +8,13 @@ import { useAuth } from "../auth/AuthContext";
 
 export function RequestListPage() {
   const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
   const [page, setPage] = useState<RequestPage | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
-  const [status, setStatus] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [q, setQ] = useState("");
+  const [status, setStatus] = useState(params.get("status") ?? "");
+  const [categoryId, setCategoryId] = useState(params.get("categoryId") ?? "");
+  const [q, setQ] = useState(params.get("q") ?? "");
 
   async function load(nextStatus = status, nextCategory = categoryId, nextQuery = q) {
     const params = new URLSearchParams();
@@ -26,26 +27,38 @@ export function RequestListPage() {
   }
 
   useEffect(() => {
-    load().catch((caught: unknown) =>
+    const nextStatus = params.get("status") ?? "";
+    const nextCategory = params.get("categoryId") ?? "";
+    const nextQuery = params.get("q") ?? "";
+    setStatus(nextStatus);
+    setCategoryId(nextCategory);
+    setQ(nextQuery);
+    load(nextStatus, nextCategory, nextQuery).catch((caught: unknown) =>
       setError(caught instanceof Error ? caught.message : "No se pudieron cargar las solicitudes."),
     );
     api<Category[]>("/api/categories")
       .then(setCategories)
       .catch(() => setCategories([]));
-  }, []);
+  }, [params]);
 
   function onFilter(event: FormEvent) {
     event.preventDefault();
-    load().catch((caught: unknown) =>
-      setError(caught instanceof Error ? caught.message : "No se pudo filtrar."),
-    );
+    const next = new URLSearchParams();
+    if (status) next.set("status", status);
+    if (categoryId) next.set("categoryId", categoryId);
+    if (q.trim()) next.set("q", q.trim());
+    setParams(next);
   }
 
   return (
     <section>
       <header className="page-header">
         <h1>{user?.role === "USER" ? "Mis solicitudes" : "Solicitudes"}</h1>
-        {user?.role === "USER" && <Link to="/solicitudes/nueva">Nueva solicitud</Link>}
+        {user?.role === "USER" && (
+          <Link className="button-link" to="/solicitudes/nueva">
+            Nueva solicitud
+          </Link>
+        )}
       </header>
       <form className="filters" onSubmit={onFilter}>
         <label>
@@ -82,7 +95,7 @@ export function RequestListPage() {
         </p>
       )}
       {!page && !error && <p className="status-line">Cargando solicitudes…</p>}
-      {page && page.items.length === 0 && <p>No hay solicitudes con esos criterios.</p>}
+      {page && page.items.length === 0 && <p className="empty">No hay solicitudes con esos criterios.</p>}
       {page && page.items.length > 0 && (
         <div className="table-wrap">
           <table>

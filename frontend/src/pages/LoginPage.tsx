@@ -29,10 +29,19 @@ export function LoginPage() {
 
   return (
     <section className="auth-screen">
+      <div className="auth-hero">
+        <p className="eyebrow">CampusFlow</p>
+        <h1>El campus, con un solo hilo de seguimiento.</h1>
+        <p>Registra una solicitud, mira quién la atiende y conserva el historial en un mismo lugar.</p>
+        <ul className="auth-points">
+          <li>El estudiante crea y consulta solo lo suyo.</li>
+          <li>El personal asigna, comenta y cambia el estado.</li>
+          <li>La administración cuida usuarios y categorías.</li>
+        </ul>
+      </div>
       <form className="card auth-card" onSubmit={onSubmit}>
-        <p className="brand">CampusFlow</p>
-        <h1>Iniciar sesión</h1>
-        <p>Registro y seguimiento de solicitudes universitarias.</p>
+        <p className="brand">Iniciar sesión</p>
+        <p>Entra con tu correo institucional de demostración.</p>
         <label>
           Correo
           <input name="email" type="email" autoComplete="username" required />

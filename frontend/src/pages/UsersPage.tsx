@@ -121,7 +121,12 @@ export function UsersPage() {
                   </select>
                 </td>
                 <td data-label="Estado">
-                  <button type="button" className="secondary" onClick={() => update(user, { active: !user.active })}>
+                  <button
+                    type="button"
+                    className={`switch${user.active ? " on" : ""}`}
+                    aria-pressed={user.active}
+                    onClick={() => update(user, { active: !user.active })}
+                  >
                     {user.active ? "Activo" : "Inactivo"}
                   </button>
                 </td>

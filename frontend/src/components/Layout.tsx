@@ -11,8 +11,15 @@ export function Layout() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <p className="brand">CampusFlow</p>
-        <p className="role">{ROLE_LABEL[user.role]}</p>
+        <div className="brand-lockup">
+          <span className="mark" aria-hidden="true">
+            CF
+          </span>
+          <div>
+            <p className="brand">CampusFlow</p>
+            <p className="role">{ROLE_LABEL[user.role]}</p>
+          </div>
+        </div>
         <nav className="nav">
           <NavLink to="/" end>
             Inicio
@@ -22,9 +29,12 @@ export function Layout() {
           {user.role === "ADMIN" && <NavLink to="/usuarios">Usuarios</NavLink>}
           {user.role === "ADMIN" && <NavLink to="/categorias">Categorías</NavLink>}
         </nav>
-        <button type="button" className="secondary" onClick={logout}>
-          Cerrar sesión
-        </button>
+        <div className="sidebar-foot">
+          <p className="who">{user.fullName}</p>
+          <button type="button" className="secondary" onClick={logout}>
+            Cerrar sesión
+          </button>
+        </div>
       </aside>
       <main className="content">
         <Outlet />

@@ -34,10 +34,14 @@ export function RegisterPage() {
 
   return (
     <section className="auth-screen">
+      <div className="auth-hero">
+        <p className="eyebrow">CampusFlow</p>
+        <h1>Abre tu cuenta y deja la solicitud en marcha.</h1>
+        <p>El registro público crea solo cuentas de estudiante. El personal lo habilita un administrador.</p>
+      </div>
       <form className="card auth-card" onSubmit={onSubmit}>
-        <p className="brand">CampusFlow</p>
-        <h1>Crear cuenta de estudiante</h1>
-        <p>El personal y los administradores se crean desde el rol administrador.</p>
+        <p className="brand">Crear cuenta</p>
+        <p>Usa un correo que todavía no esté registrado.</p>
         <label>
           Nombre completo
           <input name="fullName" required minLength={3} maxLength={120} />

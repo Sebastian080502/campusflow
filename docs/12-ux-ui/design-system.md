@@ -1,7 +1,9 @@
 # Sistema visual
 
-La interfaz usa una paleta clara: fondo `#f3f0e8`, superficie `#fffdf8`, texto `#1e2430` y acento `#0c5c4c`. El peligro es `#8d2f2f`.
+La interfaz es una aplicación de una sola página en español. No usa una librería de componentes: el estilo vive en `frontend/src/styles.css`.
 
-Los estados se muestran como insignias con la etiqueta en español: Pendiente, En revisión, En proceso, Resuelta, Cerrada, Cancelada.
+La paleta combina papel cálido (`#efe7d8`) con verde profundo (`#0e6b52` y `#10211c`). Las superficies son translúcidas y las tarjetas de estado del inicio enlazan al listado filtrado. El menú lateral marca la ruta activa con un recuadro claro.
 
-Los formularios apilan etiqueta e input. Los errores usan `role="alert"`. Las tablas se leen en móvil con `data-label` por celda. La tipografía es Segoe UI. No hay librería de componentes de terceros: el CSS vive en `frontend/src/styles.css`.
+Los títulos usan Fraunces y el texto Outfit, con Segoe UI como respaldo. Los estados siguen siendo insignias: Pendiente, En revisión, En proceso, Resuelta, Cerrada y Cancelada. Categorías y usuarios se activan con un interruptor (`aria-pressed`).
+
+Los errores usan `role="alert"`. En pantallas estrechas el menú se apila arriba y las tablas se leen con `data-label`. Si el sistema pide menos movimiento, las transiciones se apagan.
