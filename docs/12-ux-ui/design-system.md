@@ -1,5 +1,7 @@
 # Sistema visual
 
+Lo que está construido hoy es el layout anterior: menú lateral, tarjetas de estado e ilustración de postal. No se vuelve a pintar ese layout. El siguiente cambio de interfaz sigue [design-direction.md](design-direction.md): expediente de secretaría, radicado `CF-` y lomo de estados.
+
 La interfaz es una aplicación de una sola página en español. No usa una librería de componentes: el estilo vive en `frontend/src/styles.css` y las ilustraciones son SVG propios en `frontend/src/components/CampusArt.tsx`.
 
 La paleta combina papel cálido (`#efe7d8`) con verde profundo (`#0e6b52` y `#10211c`). El dibujo del campus —aulas, torre y un sendero— aparece en el acceso, el panel y la creación de una solicitud. El sendero representa el recorrido: Pendiente, En revisión, En proceso, Resuelta y Cerrada. Cancelada queda fuera de ese camino.
