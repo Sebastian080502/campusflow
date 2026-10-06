@@ -81,7 +81,12 @@ export function CategoriesPage() {
               <strong>{category.name}</strong>
               <p>{category.description}</p>
             </div>
-            <button type="button" className="secondary" onClick={() => toggle(category)}>
+            <button
+              type="button"
+              className={`switch${category.active ? " on" : ""}`}
+              aria-pressed={category.active}
+              onClick={() => toggle(category)}
+            >
               {category.active ? "Activa" : "Inactiva"}
             </button>
           </li>
