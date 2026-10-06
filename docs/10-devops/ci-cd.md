@@ -1,6 +1,6 @@
 # Integración continua
 
-El workflow `.github/workflows/ci.yml` corre en `dev`, `qa` y `main`, y en pull requests. Instala API y cliente, genera el cliente de Prisma, ejecuta las pruebas unitarias y construye ambos paquetes.
+El workflow `.github/workflows/ci.yml` corre en `dev`, `qa` y `main`, y en pull requests. Instala API y cliente, genera el cliente de Prisma, ejecuta las pruebas unitarias y construye ambos paquetes. Ese job no levanta PostgreSQL. El flujo de extremo a extremo se ejecuta en local contra la base `campusflow_test`.
 
 Las pruebas unitarias no necesitan PostgreSQL. La contraseña que pudiera aparecer en un job futuro de base es un valor efímero de ese job, no un secreto reutilizable, y no se documenta como credencial real.
 
