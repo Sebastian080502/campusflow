@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  STAFF
+  ADMIN
+}
+
+enum RequestStatus {
+  PENDING
+  IN_REVIEW
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum HistoryType {
+  CREATED
+  STATUS_CHANGED
+  ASSIGNED
+  COMMENTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         Role     @default(USER)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  requestsCreated  Request[]        @relation("Requester")
+  requestsAssigned Request[]        @relation("Assignee")
+  comments         RequestComment[]
+  historyEntries   RequestHistory[]
+
+  @@index([role, active])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  requests    Request[]
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  title       String
+  description String
+  status      RequestStatus @default(PENDING)
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id])
+  requesterId String
+  requester   User          @relation("Requester", fields: [requesterId], references: [id])
+  assigneeId  String?
+  assignee    User?         @relation("Assignee", fields: [assigneeId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  comments    RequestComment[]
+  history     RequestHistory[]
+
+  @@index([status, updatedAt])
+  @@index([requesterId])
+  @@index([assigneeId])
+  @@index([categoryId])
+}
+
+model RequestComment {
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([requestId, createdAt])
+}
+
+model RequestHistory {
+  id         String         @id @default(cuid())
+  requestId  String
+  request    Request        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actorId    String
+  actor      User           @relation(fields: [actorId], references: [id])
+  type       HistoryType
+  fromStatus RequestStatus?
+  toStatus   RequestStatus?
+  note       String
+  createdAt  DateTime       @default(now())
+
+  @@index([requestId, createdAt])
+}
+
+model RequestCounter {
+  id    Int @id
+  value Int @default(0)
+}
