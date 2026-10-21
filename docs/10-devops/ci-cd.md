@@ -1,9 +1,19 @@
-# Integración continua
+# Integración y entrega
 
-El workflow `.github/workflows/ci.yml` corre en `dev`, `qa` y `main`, y en pull requests. Instala API y cliente, genera el cliente de Prisma, ejecuta las pruebas unitarias y construye ambos paquetes. Ese job no levanta PostgreSQL. El flujo de extremo a extremo se ejecuta en local contra la base `campusflow_test`.
+```mermaid
+flowchart LR
+  ci[npm ci] --> gen[prisma generate]
+  gen --> unit[pruebas unitarias API y cliente]
+  unit --> e2e[pruebas e2e con PostgreSQL]
+  e2e --> images[build de imagenes]
+  images --> trivy[Trivy CRITICAL]
+  trivy --> push[push GHCR solo main]
+  push --> deploy[despliegue SSH]
+  deploy --> health["curl /api/health con la version del commit"]
+```
 
-Las pruebas unitarias no necesitan PostgreSQL. La contraseña que pudiera aparecer en un job futuro de base es un valor efímero de ese job, no un secreto reutilizable, y no se documenta como credencial real.
+El workflow `.github/workflows/ci.yml` corre en pull requests y en `dev`, `qa` y `main`. Instala API y cliente, genera Prisma, ejecuta las pruebas unitarias, levanta PostgreSQL 16 con la base `campusflow_test` y ejecuta el paso `Pruebas e2e`. La contraseña de ese servicio es `ci-job-only`: vale solo dentro del job y no es una credencial reutilizable.
 
-`.github/workflows/living-docs.yml` comprueba que un cambio de API, cliente, datos o Docker actualice la documentación mapeada en `.living-docs.json`. La guía está en `docs/00-governance/documentation-rules.md`.
+Después de las pruebas, el job `Imágenes` construye la API con `--target prod` y `APP_VERSION` igual a los siete primeros caracteres del commit, construye el cliente, y ejecuta `trivy image --severity CRITICAL --ignore-unfixed`. El push a GHCR (`campusflow-api` y `campusflow-web`, nombre en minúsculas) ocurre solo en `main`. El job `Despliegue` usa los secretos `EC2_HOST` y `EC2_SSH_KEY`, copia `compose.prod.yml` y espera a que `/api/health` devuelva esa versión. El `.env` de producción no se copia: vive en la EC2.
 
-No hay despliegue automático a un servidor. Publicar a producción es fusionar `qa` en `main` después de la verificación.
+`.github/workflows/living-docs.yml` sigue comprobando que un cambio de API, cliente, datos o Docker actualice la documentación mapeada en `.living-docs.json`.

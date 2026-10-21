@@ -5,10 +5,27 @@ on:
     branches: [dev, qa, main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: Pruebas unitarias y build
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: campusflow
+          POSTGRES_PASSWORD: ci-job-only
+          POSTGRES_DB: campusflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U campusflow -d campusflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,11 +38,17 @@ jobs:
         working-directory: backend
         env:
           # Job-only placeholder. Prisma generate does not connect and this is not a reusable password.
-          DATABASE_URL: postgresql://campusflow:ci-job-only@localhost:5432/campusflow
+          DATABASE_URL: postgresql://campusflow:ci-job-only@localhost:5432/campusflow_test
         run: npx prisma generate
       - name: Pruebas unitarias de la API
         working-directory: backend
         run: npm test
+      - name: Pruebas e2e
+        working-directory: backend
+        env:
+          # Ephemeral job database. Not a reusable credential.
+          DATABASE_URL: postgresql://campusflow:ci-job-only@localhost:5432/campusflow_test?schema=public
+        run: npm run test:e2e
       - name: Construir API
         working-directory: backend
         run: npm run build
@@ -38,3 +61,70 @@ jobs:
       - name: Construir cliente
         working-directory: frontend
         run: npm run build
+
+  images:
+    name: Imágenes
+    needs: verify
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nombres de imagen
+        id: names
+        run: |
+          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "image=ghcr.io/${owner}/campusflow" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Construir API
+        run: docker build --target prod --build-arg APP_VERSION=${{ steps.names.outputs.tag }} -t ${{ steps.names.outputs.image }}-api:${{ steps.names.outputs.tag }} ./backend
+      - name: Construir cliente
+        run: docker build -t ${{ steps.names.outputs.image }}-web:${{ steps.names.outputs.tag }} ./frontend
+      - name: Trivy API
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 ${{ steps.names.outputs.image }}-api:${{ steps.names.outputs.tag }}
+      - name: Trivy cliente
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 ${{ steps.names.outputs.image }}-web:${{ steps.names.outputs.tag }}
+      - name: Entrar a GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Publicar imágenes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker push ${{ steps.names.outputs.image }}-api:${{ steps.names.outputs.tag }}
+          docker push ${{ steps.names.outputs.image }}-web:${{ steps.names.outputs.tag }}
+
+  deploy:
+    name: Despliegue
+    needs: images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publicar en la EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$EC2_HOST" ] || [ -z "$EC2_SSH_KEY" ]; then
+            echo "Faltan los secretos EC2_HOST o EC2_SSH_KEY."
+            exit 1
+          fi
+          user=${EC2_USER:-ubuntu}
+          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          image="ghcr.io/${owner}/campusflow"
+          tag="${GITHUB_SHA::7}"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$EC2_SSH_KEY" > "$HOME/.ssh/campusflow_key"
+          chmod 600 "$HOME/.ssh/campusflow_key"
+          ssh_opts="-i $HOME/.ssh/campusflow_key -o StrictHostKeyChecking=accept-new"
+          ssh $ssh_opts "${user}@${EC2_HOST}" "mkdir -p ~/campusflow"
+          scp $ssh_opts compose.prod.yml "${user}@${EC2_HOST}:~/campusflow/compose.prod.yml"
+          printf '%s' "$GH_TOKEN" | ssh $ssh_opts "${user}@${EC2_HOST}" "docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin"
+          ssh $ssh_opts "${user}@${EC2_HOST}" "cd ~/campusflow && IMAGE=${image} TAG=${tag} docker compose -f compose.prod.yml pull && IMAGE=${image} TAG=${tag} docker compose -f compose.prod.yml up -d --wait"
+          body=$(curl -fsS "http://${EC2_HOST}/api/health")
+          printf '%s\n' "$body"
+          printf '%s\n' "$body" | grep -F "\"version\":\"${tag}\""
