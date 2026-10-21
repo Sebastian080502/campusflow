@@ -8,4 +8,4 @@
 - La migración no corre dentro del proceso de la API. En Compose la aplica el servicio `migrate`.
 - `GET /api/health` responde estado, base y versión. Si `SELECT 1` falla, responde 503.
 - Si `SEED_ON_START=true`, siembra categorías y las cuentas cuyas variables `SEED_*_PASSWORD` existan. En producción esa variable no se define; la semilla es `npm run seed`.
-- Contrato: [../07-api/contracts/openapi/campusflow.yaml](../07-api/contracts/openapi/campusflow.yaml).
+- Contrato: [../07-api/contracts/openapi/campusflow.yaml](../07-api/contracts/openapi/campusflow.yaml). La imagen de producción lo copia a `/app/openapi/campusflow.yaml` y lo publica en `/api/docs`. Sin ese archivo el proceso arranca igual y omite la documentación.

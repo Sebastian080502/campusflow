@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: campusflow
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U campusflow -d campusflow"]
       interval: 5s
@@ -17,7 +17,10 @@ services:
     restart: unless-stopped
 
   migrate:
-    build: ./backend
+    build:
+      context: ./backend
+      additional_contexts:
+        openapi: ./docs/07-api/contracts/openapi
     command: ["npx", "prisma", "migrate", "deploy"]
     environment:
       DATABASE_URL: postgresql://campusflow:${POSTGRES_PASSWORD}@db:5432/campusflow?schema=public
@@ -27,7 +30,10 @@ services:
     restart: "no"
 
   api:
-    build: ./backend
+    build:
+      context: ./backend
+      additional_contexts:
+        openapi: ./docs/07-api/contracts/openapi
     env_file: .env
     environment:
       APP_ENV: ${APP_ENV:-development}

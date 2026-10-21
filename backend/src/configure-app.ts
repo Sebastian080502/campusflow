@@ -53,6 +53,7 @@ export function configureApp(app: INestApplication, env: AppEnv): void {
 
 function mountApiDocs(app: INestApplication): void {
   const specPath = [
+    resolve(__dirname, "../openapi/campusflow.yaml"),
     resolve(__dirname, "../../../docs/07-api/contracts/openapi/campusflow.yaml"),
     resolve(process.cwd(), "../docs/07-api/contracts/openapi/campusflow.yaml"),
     resolve(process.cwd(), "docs/07-api/contracts/openapi/campusflow.yaml"),

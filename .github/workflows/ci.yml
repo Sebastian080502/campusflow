@@ -79,7 +79,7 @@ jobs:
           echo "image=ghcr.io/${owner}/campusflow" >> "$GITHUB_OUTPUT"
           echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
       - name: Construir API
-        run: docker build --target prod --build-arg APP_VERSION=${{ steps.names.outputs.tag }} -t ${{ steps.names.outputs.image }}-api:${{ steps.names.outputs.tag }} ./backend
+        run: docker build --target prod --build-arg APP_VERSION=${{ steps.names.outputs.tag }} --build-context openapi=./docs/07-api/contracts/openapi -t ${{ steps.names.outputs.image }}-api:${{ steps.names.outputs.tag }} ./backend
       - name: Construir cliente
         run: docker build -t ${{ steps.names.outputs.image }}-web:${{ steps.names.outputs.tag }} ./frontend
       - name: Trivy API

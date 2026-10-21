@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache openssl
@@ -20,6 +21,7 @@ WORKDIR /app
 RUN apk add --no-cache openssl wget
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
+COPY --from=openapi campusflow.yaml ./openapi/campusflow.yaml
 RUN npm ci --omit=dev
 ENV DATABASE_URL=postgresql://campusflow:build-only@127.0.0.1:5432/campusflow
 RUN npx prisma generate
