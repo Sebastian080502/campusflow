@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { ROLE_LABEL } from "../domain/labels";
 import { useAuth } from "../auth/AuthContext";
 import { Icon, Mark } from "./Icons";
+
+function casesActive(pathname: string) {
+  return (
+    pathname === "/solicitudes" ||
+    (pathname.startsWith("/solicitudes/") && !pathname.startsWith("/solicitudes/nueva"))
+  );
+}
 
 function titleFor(pathname: string) {
   if (pathname === "/") return "Inicio";
@@ -48,9 +55,13 @@ export function Layout() {
             <Icon name="home" /> Inicio
           </NavLink>
           <p className="nav-label">Gestión</p>
-          <NavLink to="/solicitudes">
+          <Link
+            to="/solicitudes"
+            className={casesActive(pathname) ? "active" : undefined}
+            aria-current={casesActive(pathname) ? "page" : undefined}
+          >
             <Icon name="cases" /> Expedientes
-          </NavLink>
+          </Link>
           {user.role === "USER" && (
             <NavLink to="/solicitudes/nueva">
               <Icon name="plus" /> Radicar

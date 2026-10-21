@@ -7,8 +7,8 @@
 | /recuperar | Público | Pide el código para restablecer la contraseña |
 | /restablecer | Público | Define una contraseña nueva con ese código |
 | / | Autenticado | Caso que requiere atención y conteo por estado |
-| /solicitudes | Autenticado | Tabla de expedientes. El estudiante ve "Mis solicitudes" |
-| /solicitudes/nueva | USER | Formulario de alta |
+| /solicitudes | Autenticado | Tabla de expedientes. El estudiante ve "Mis solicitudes". Queda marcada también en el detalle, no en el alta |
+| /solicitudes/nueva | USER | Formulario de alta. Marca Radicar, no Expedientes |
 | /solicitudes/:id | Autenticado, si puede verla | Detalle, acciones, comentarios e historial |
 | /usuarios | ADMIN | Alta y edición de cuentas |
 | /categorias | ADMIN | Alta y activación de categorías |
