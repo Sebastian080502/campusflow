@@ -1,13 +1,15 @@
 # Sistema visual
 
-Lo que está construido hoy es el layout anterior: menú lateral, tarjetas de estado e ilustración de postal. No se vuelve a pintar ese layout. El siguiente cambio de interfaz sigue [design-direction.md](design-direction.md): expediente de secretaría, radicado `CF-` y lomo de estados.
+La interfaz es una consola de operaciones del campus: lienzo gris frío, superficies blancas y un solo verde institucional. El estilo vive en `frontend/src/styles.css`. La marca y los iconos están en `frontend/src/components/Icons.tsx`.
 
-La interfaz es una aplicación de una sola página en español. No usa una librería de componentes: el estilo vive en `frontend/src/styles.css` y las ilustraciones son SVG propios en `frontend/src/components/CampusArt.tsx`.
+Tipografía: Manrope en toda la aplicación. IBM Plex Mono solo en los códigos `CF-`. No hay serif en títulos.
 
-La paleta combina papel cálido (`#efe7d8`) con verde profundo (`#0e6b52` y `#10211c`). El dibujo del campus —aulas, torre y un sendero— aparece en el acceso, el panel y la creación de una solicitud. El sendero representa el recorrido: Pendiente, En revisión, En proceso, Resuelta y Cerrada. Cancelada queda fuera de ese camino.
+Tokens: fondo `#f3f5f7`, superficie `#ffffff`, tinta `#1c2128`, texto secundario `#5c6770`, borde `#e3e7ec`, primario `#0f6e56`. Radio de 8px en controles y 12px en paneles. El verde se usa en la marca, el ítem activo del menú, el botón principal y los estados activos. Los estados de solicitud son insignias suaves (ámbar, azul, verde, gris, rojo) con un punto.
 
-Los títulos usan Fraunces y el texto Outfit, con Segoe UI como respaldo. Los estados son insignias y, en el detalle, un paso a paso que marca el estado actual. Cada tarjeta del panel explica qué significa ese estado y abre el listado filtrado. El menú lateral marca la ruta activa y acompaña cada enlace con un icono.
+El cascarón es una barra lateral compacta (Inicio, Expedientes y, para el administrador, Personas y Oficios) más una barra superior con el contexto y la persona en sesión. En pantallas estrechas la barra se convierte en un cajón. El acceso y el registro son una tarjeta centrada, sin la barra lateral. El ojo de la contraseña vive dentro del campo.
 
-Las contraseñas de acceso, registro y alta de usuarios tienen un botón Mostrar / Ocultar (`aria-pressed`). Categorías y usuarios se activan con un interruptor (`aria-pressed`). Las categorías conocidas muestran un icono según su nombre.
+Los listados son tablas o filas dentro de un panel. Los formularios de alta se abren junto al título de la página y no ocupan todo el ancho. La confirmación de un cambio de estado queda en la misma ficha.
 
-Los errores usan `role="alert"`. En pantallas estrechas el menú se apila arriba, la ilustración grande del acceso se oculta y queda una versión compacta dentro del formulario. Las tablas se leen con `data-label`. Si el sistema pide menos movimiento, las transiciones se apagan.
+Cada expediente muestra el código `CF-` y, debajo, el identificador interno. La descripción tiene su propio bloque. El recorrido marca el estado actual y la trazabilidad nombra a la persona, el momento y el cambio. El acceso incluye recuperación de contraseña y un enlace a la documentación de la API en `/api/docs`.
+
+Los errores usan `role="alert"`. En móvil las tablas se leen con `data-label`. Si el sistema pide menos movimiento, las transiciones se apagan.

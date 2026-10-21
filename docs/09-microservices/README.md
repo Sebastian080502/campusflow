@@ -7,4 +7,4 @@ CampusFlow no es una arquitectura de microservicios. Esta carpeta conserva el no
 | API | [api.md](api.md) |
 | Cliente web | [web.md](web.md) |
 
-No hay despliegue independiente por módulo, ni contratos de eventos entre procesos. La API y el cliente se construyen y se publican juntos.
+No hay despliegue independiente por módulo, ni contratos de eventos entre procesos. La API y el cliente se publican como dos imágenes y se ejecutan juntos en Compose.

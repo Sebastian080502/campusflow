@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException } from "@nestjs/common";
 import { Role } from "../domain/request-policy";
-import { PrismaService } from "../prisma/prisma.service";
+import { RequestsRepository } from "./requests.repository";
 import { RequestsService } from "./requests.service";
 
 describe("RequestsService", () => {
@@ -20,7 +20,7 @@ describe("RequestsService", () => {
   };
 
   it("rejects request creation from staff", async () => {
-    const service = new RequestsService({} as PrismaService);
+    const service = new RequestsService({} as RequestsRepository);
     await expect(
       service.create(staff, {
         title: "Cambio de salón",
@@ -31,10 +31,10 @@ describe("RequestsService", () => {
   });
 
   it("rejects an inactive or missing category", async () => {
-    const prisma = {
-      category: { findFirst: () => Promise.resolve(null) },
-    } as unknown as PrismaService;
-    const service = new RequestsService(prisma);
+    const requests = {
+      findActiveCategory: () => Promise.resolve(null),
+    } as unknown as RequestsRepository;
+    const service = new RequestsService(requests);
 
     await expect(
       service.create(student, {

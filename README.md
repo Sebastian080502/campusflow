@@ -22,18 +22,14 @@ Incremento funcional del monolito: API NestJS, cliente React y PostgreSQL. La do
 
 ## Cómo ejecutarlo
 
-1. Copia `.env.development.example` a `backend/.env` y cambia los placeholders. `JWT_SECRET` necesita al menos 32 caracteres.
+1. Copia `.env.example` a `.env` en la raíz y cambia los placeholders. `JWT_SECRET` necesita al menos 32 caracteres.
 2. Levanta PostgreSQL (`docker compose up db`) y, en `backend`, ejecuta `npx prisma migrate deploy` y `npm run start:dev`.
 3. En `frontend`, ejecuta `npm install` y `npm run dev`. Abre `http://localhost:5173`.
 
-`SEED_ON_START=true` solo en desarrollo local.
+La semilla se corre con `npm run seed` en `backend`. `SEED_ON_START=true` solo en desarrollo local.
 
 ## Ramas
 
-| Rama | Ambiente |
-| --- | --- |
-| `dev` | Desarrollo. Aquí entra el trabajo nuevo. |
-| `qa` | Aseguramiento. Destino de promoción cuando el incremento compila y pasa las pruebas unitarias. |
-| `main` | Producción. No se reescribe su historia. |
+`main` es la rama desplegable. El trabajo entra por una rama corta y un pull request. El detalle está en `docs/05-architecture/adr/008-github-flow.md`.
 
 Pruebas: `npm test` en la raíz, o por separado en `backend` y `frontend`.

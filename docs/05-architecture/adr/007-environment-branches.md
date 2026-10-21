@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada.
+Reemplazada por el [ADR 008](008-github-flow.md). El texto siguiente conserva la decisión original.
 
 ## Decisión
 

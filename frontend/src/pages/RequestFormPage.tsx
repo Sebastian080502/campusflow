@@ -2,8 +2,6 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import type { Category, RequestDetail } from "../api/types";
-import { CampusScene } from "../components/CampusArt";
-
 export function RequestFormPage() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,16 +43,15 @@ export function RequestFormPage() {
   }
 
   return (
-    <section>
+    <section className="page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Tu trámite</p>
           <h1>Nueva solicitud</h1>
-          <p className="lede">Cuenta qué necesitas. El campus le asigna un código y un recorrido.</p>
+          <p className="sub">Cuenta qué necesitas. El campus le asigna un código y un recorrido.</p>
         </div>
       </header>
-      <div className="request-create">
-        <form className="card form-grid" onSubmit={onSubmit}>
+      <div className="split">
+        <form className="panel panel-pad form-grid" onSubmit={onSubmit}>
           <label>
             Categoría
             <select
@@ -94,12 +91,11 @@ export function RequestFormPage() {
               {error}
             </p>
           )}
-          <button type="submit" disabled={pending}>
-            {pending ? "Guardando…" : "Crear solicitud"}
+          <button className="btn btn-primary" type="submit" disabled={pending}>
+            {pending ? "Enviando…" : "Crear solicitud"}
           </button>
         </form>
-        <aside className="card aside-note">
-          <CampusScene compact />
+        <aside className="panel panel-pad aside">
           <h2>Qué ocurre después</h2>
           <ol>
             <li>Queda pendiente, con un código CF.</li>

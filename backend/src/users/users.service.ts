@@ -1,11 +1,5 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
-import { Prisma, Role as PrismaRole } from "@prisma/client";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Role as PrismaRole } from "@prisma/client";
 import { AuthenticatedUser, Role } from "../domain/request-policy";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -58,23 +52,16 @@ export class UsersService {
   }
 
   async create(input: CreateUserDto): Promise<PublicUser> {
-    try {
-      const user = await this.prisma.user.create({
-        data: {
-          fullName: input.fullName,
-          email: input.email,
-          passwordHash: await hashPassword(input.password),
-          role: input.role as PrismaRole,
-        },
-        select: publicSelect,
-      });
-      return toPublicUser(user);
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ConflictException("Ya existe una cuenta con ese correo.");
-      }
-      throw error;
-    }
+    const user = await this.prisma.user.create({
+      data: {
+        fullName: input.fullName,
+        email: input.email,
+        passwordHash: await hashPassword(input.password),
+        role: input.role as PrismaRole,
+      },
+      select: publicSelect,
+    });
+    return toPublicUser(user);
   }
 
   async update(actor: AuthenticatedUser, id: string, input: UpdateUserDto): Promise<PublicUser> {

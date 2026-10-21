@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { CampusScene } from "../components/CampusArt";
+import { Mark } from "../components/Icons";
 import { PasswordField } from "../components/PasswordField";
 
 export function LoginPage() {
@@ -10,9 +10,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  if (user) return <Navigate to="/" replace />;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,22 +28,17 @@ export function LoginPage() {
   }
 
   return (
-    <section className="auth-screen">
-      <div className="auth-hero">
-        <CampusScene />
-        <p className="eyebrow">CampusFlow</p>
-        <h1>El campus, con un solo hilo de seguimiento.</h1>
-        <p>Registra una solicitud, mira quién la atiende y conserva el historial en un mismo lugar.</p>
-        <ul className="auth-points">
-          <li>El estudiante crea y consulta solo lo suyo.</li>
-          <li>El personal asigna, comenta y cambia el estado.</li>
-          <li>La administración cuida usuarios y categorías.</li>
-        </ul>
-      </div>
-      <form className="card auth-card" onSubmit={onSubmit}>
-        <CampusScene compact />
-        <p className="brand">Iniciar sesión</p>
-        <p>Entra con tu correo institucional de demostración.</p>
+    <section className="auth">
+      <form className="panel auth-card" onSubmit={onSubmit}>
+        <div className="auth-brand">
+          <Mark />
+          <div>
+            <p className="brand">CampusFlow</p>
+            <p className="brand-sub">Operaciones del campus</p>
+          </div>
+        </div>
+        <h1>Entrar</h1>
+        <p className="sub">Usa el correo institucional para abrir tu sesión.</p>
         <label>
           Correo
           <input name="email" type="email" autoComplete="username" required />
@@ -56,11 +49,17 @@ export function LoginPage() {
             {error}
           </p>
         )}
-        <button type="submit" disabled={pending}>
+        <button className="btn btn-primary" type="submit" disabled={pending}>
           {pending ? "Entrando…" : "Entrar"}
         </button>
-        <p>
-          ¿No tienes cuenta? <Link to="/registro">Regístrate como estudiante</Link>
+        <p className="field-note">
+          <Link to="/recuperar">Olvidé mi contraseña</Link>
+        </p>
+        <p className="field-note">
+          ¿Primera vez? <Link to="/registro">Crear cuenta de estudiante</Link>
+        </p>
+        <p className="field-note">
+          <a href="/api/docs">Documentación de la API</a>
         </p>
       </form>
     </section>

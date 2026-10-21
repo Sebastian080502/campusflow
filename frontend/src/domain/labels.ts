@@ -25,6 +25,13 @@ export const ROLE_LABEL = {
   ADMIN: "Administrador",
 } as const;
 
+export const HISTORY_LABEL: Record<string, string> = {
+  CREATED: "Creación",
+  STATUS_CHANGED: "Cambio de estado",
+  ASSIGNED: "Asignación",
+  COMMENTED: "Comentario",
+};
+
 export const STATUS_ACTION: Record<RequestStatus, string> = {
   PENDING: "Volver a pendiente",
   IN_REVIEW: "Pasar a en revisión",

@@ -10,6 +10,7 @@ export function UsersPage() {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   async function reload() {
     setUsers(await api<PublicUser[]>("/api/users"));
@@ -37,6 +38,7 @@ export function UsersPage() {
         }),
       });
       event.currentTarget.reset();
+      setCreating(false);
       await reload();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo crear el usuario.");
@@ -59,44 +61,61 @@ export function UsersPage() {
   }
 
   return (
-    <section>
-      <h1>Usuarios</h1>
+    <section className="page">
+      <header className="page-header">
+        <div>
+          <h1>Personas</h1>
+          <p className="sub">Cuentas del campus: nombre, correo, rol y si pueden entrar.</p>
+        </div>
+        <button className="btn btn-primary" type="button" onClick={() => setCreating((value) => !value)}>
+          Nueva persona
+        </button>
+      </header>
       {error && (
         <p className="alert" role="alert">
           {error}
         </p>
       )}
-      <form className="card form-grid" onSubmit={create}>
-        <h2>Nuevo usuario</h2>
-        <label>
-          Nombre
-          <input name="fullName" required minLength={3} />
-        </label>
-        <label>
-          Correo
-          <input name="email" type="email" required />
-        </label>
-        <PasswordField
-          name="password"
-          label="Contraseña temporal"
-          autoComplete="new-password"
-          minLength={8}
-        />
-        <label>
-          Rol
-          <select name="role" defaultValue="STAFF">
-            {ROLES.map((role) => (
-              <option key={role} value={role}>
-                {ROLE_LABEL[role]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" disabled={pending}>
-          {pending ? "Guardando…" : "Crear usuario"}
-        </button>
-      </form>
-      <div className="table-wrap">
+      {creating && (
+        <form className="panel panel-pad form-grid composer" onSubmit={create}>
+          <h2>Nueva persona</h2>
+          <label>
+            Nombre
+            <input name="fullName" required minLength={3} />
+          </label>
+          <label>
+            Correo
+            <input name="email" type="email" required />
+          </label>
+          <PasswordField name="password" label="Contraseña temporal" autoComplete="new-password" minLength={8} />
+          <label>
+            Rol
+            <select name="role" defaultValue="STAFF">
+              {ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {ROLE_LABEL[role]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="btn-row">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.form?.reset();
+                setCreating(false);
+              }}
+            >
+              Cancelar
+            </button>
+            <button className="btn btn-primary" type="submit" disabled={pending}>
+              {pending ? "Guardando…" : "Crear usuario"}
+            </button>
+          </div>
+        </form>
+      )}
+      <div className="panel table-wrap">
         <table>
           <thead>
             <tr>
@@ -113,6 +132,7 @@ export function UsersPage() {
                 <td data-label="Correo">{user.email}</td>
                 <td data-label="Rol">
                   <select
+                    className="table-select"
                     value={user.role}
                     onChange={(event) => update(user, { role: event.target.value as Role })}
                   >
@@ -126,10 +146,11 @@ export function UsersPage() {
                 <td data-label="Estado">
                   <button
                     type="button"
-                    className={`switch${user.active ? " on" : ""}`}
+                    className={`badge${user.active ? " on" : ""}`}
                     aria-pressed={user.active}
                     onClick={() => update(user, { active: !user.active })}
                   >
+                    <span className="dot" aria-hidden="true" />
                     {user.active ? "Activo" : "Inactivo"}
                   </button>
                 </td>

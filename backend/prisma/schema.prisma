@@ -43,6 +43,7 @@ model User {
   requestsAssigned Request[]        @relation("Assignee")
   comments         RequestComment[]
   historyEntries   RequestHistory[]
+  passwordResets   PasswordResetToken[]
 
   @@index([role, active])
 }
@@ -105,6 +106,18 @@ model RequestHistory {
   createdAt  DateTime       @default(now())
 
   @@index([requestId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model RequestCounter {

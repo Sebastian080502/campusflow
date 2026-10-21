@@ -16,6 +16,11 @@ export interface PublicUser {
   active: boolean;
 }
 
+export interface PasswordResetRequest {
+  message: string;
+  resetToken?: string;
+}
+
 export interface SessionResponse {
   accessToken: string;
   user: PublicUser;
@@ -62,6 +67,8 @@ export interface RequestDetail extends RequestSummary {
   history: Array<{
     id: string;
     type: string;
+    fromStatus: RequestStatus | null;
+    toStatus: RequestStatus | null;
     note: string;
     createdAt: string;
     actor: { id: string; fullName: string; role: string };

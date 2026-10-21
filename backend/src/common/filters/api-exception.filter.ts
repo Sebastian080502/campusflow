@@ -6,7 +6,19 @@ import {
   HttpStatus,
   Logger,
 } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { Response } from "express";
+
+const UNIQUE_MESSAGE: Record<string, string> = {
+  User: "Ya existe una cuenta con ese correo.",
+  Category: "Ya existe una categoría con ese nombre.",
+};
+
+const MISSING_MESSAGE: Record<string, string> = {
+  User: "Usuario no encontrado.",
+  Category: "Categoría no encontrada.",
+  Request: "Solicitud no encontrada.",
+};
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
@@ -31,6 +43,18 @@ export class ApiExceptionFilter implements ExceptionFilter {
       return;
     }
 
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      const mapped = mapPrismaError(exception);
+      if (mapped) {
+        response.status(mapped.status).json({
+          statusCode: mapped.status,
+          message: mapped.message,
+          error: mapped.error,
+        });
+        return;
+      }
+    }
+
     this.logger.error(exception instanceof Error ? exception.stack : exception);
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -38,4 +62,25 @@ export class ApiExceptionFilter implements ExceptionFilter {
       error: "Internal Server Error",
     });
   }
+}
+
+function mapPrismaError(
+  error: Prisma.PrismaClientKnownRequestError,
+): { status: number; message: string; error: string } | null {
+  const model = typeof error.meta?.modelName === "string" ? error.meta.modelName : undefined;
+  if (error.code === "P2002") {
+    return {
+      status: HttpStatus.CONFLICT,
+      message: (model && UNIQUE_MESSAGE[model]) || "Ya existe un registro con esos datos.",
+      error: "Conflict",
+    };
+  }
+  if (error.code === "P2025") {
+    return {
+      status: HttpStatus.NOT_FOUND,
+      message: (model && MISSING_MESSAGE[model]) || "Registro no encontrado.",
+      error: "Not Found",
+    };
+  }
+  return null;
 }

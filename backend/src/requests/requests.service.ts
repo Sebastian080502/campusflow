@@ -5,43 +5,30 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { HistoryType as PrismaHistoryType, Prisma, RequestStatus as PrismaRequestStatus } from "@prisma/client";
 import { rethrowDomain } from "../common/domain-http";
 import {
   AuthenticatedUser,
-  HistoryType,
   RequestStatus,
   Role,
   canComment,
   canViewRequest,
   planRequestChange,
 } from "../domain/request-policy";
-import { PrismaService } from "../prisma/prisma.service";
 import { CreateCommentDto, CreateRequestDto, ListRequestsQuery, UpdateRequestDto } from "./dto/request.dto";
-import {
-  DetailRecord,
-  historyNote,
-  requestDetailInclude,
-  requestListInclude,
-  toRequestDetail,
-  toRequestSummary,
-} from "./request.presenter";
+import { DetailRecord, toRequestDetail, toRequestSummary } from "./request.presenter";
+import { REQUESTS_REPOSITORY, RequestScope, RequestsRepository } from "./requests.repository";
 
 @Injectable()
 export class RequestsService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(@Inject(REQUESTS_REPOSITORY) private readonly requests: RequestsRepository) {}
 
   async summary(actor: AuthenticatedUser) {
-    const grouped = await this.prisma.request.groupBy({
-      by: ["status"],
-      where: this.visibilityWhere(actor),
-      _count: { _all: true },
-    });
+    const grouped = await this.requests.countByStatus(this.scope(actor));
     const byStatus = Object.fromEntries(
       Object.values(RequestStatus).map((status) => [status, 0]),
     ) as Record<RequestStatus, number>;
     for (const row of grouped) {
-      byStatus[row.status as RequestStatus] = row._count._all;
+      byStatus[row.status as RequestStatus] = row.count;
     }
     const total = Object.values(byStatus).reduce((sum, count) => sum + count, 0);
     return { total, byStatus };
@@ -50,31 +37,15 @@ export class RequestsService {
   async list(actor: AuthenticatedUser, query: ListRequestsQuery) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const where: Prisma.RequestWhereInput = {
-      ...this.visibilityWhere(actor),
+    const { total, rows } = await this.requests.findPage({
+      scope: this.scope(actor),
+      page,
+      pageSize,
       status: query.status,
       categoryId: query.categoryId,
-    };
-    if (actor.role !== Role.USER && query.assigneeId) {
-      where.assigneeId = query.assigneeId;
-    }
-    if (query.q) {
-      where.OR = [
-        { title: { contains: query.q, mode: "insensitive" } },
-        { code: { contains: query.q, mode: "insensitive" } },
-      ];
-    }
-
-    const [total, rows] = await Promise.all([
-      this.prisma.request.count({ where }),
-      this.prisma.request.findMany({
-        where,
-        include: requestListInclude,
-        orderBy: { updatedAt: "desc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-    ]);
+      assigneeId: actor.role === Role.USER ? undefined : query.assigneeId,
+      q: query.q,
+    });
 
     return {
       items: rows.map(toRequestSummary),
@@ -94,34 +65,16 @@ export class RequestsService {
       throw new ForbiddenException("Solo un estudiante puede registrar una solicitud.");
     }
 
-    const category = await this.prisma.category.findFirst({
-      where: { id: input.categoryId, active: true },
-    });
+    const category = await this.requests.findActiveCategory(input.categoryId);
     if (!category) {
       throw new BadRequestException("La categoría no existe o está inactiva.");
     }
 
-    const requestId = await this.prisma.$transaction(async (tx) => {
-      const request = await tx.request.create({
-        data: {
-          code: await this.nextCode(tx),
-          title: input.title.trim(),
-          description: input.description.trim(),
-          categoryId: category.id,
-          requesterId: actor.id,
-          status: PrismaRequestStatus.PENDING,
-        },
-      });
-      await tx.requestHistory.create({
-        data: {
-          requestId: request.id,
-          actorId: actor.id,
-          type: PrismaHistoryType.CREATED,
-          toStatus: PrismaRequestStatus.PENDING,
-          note: "Solicitud registrada.",
-        },
-      });
-      return request.id;
+    const requestId = await this.requests.createWithHistory({
+      title: input.title.trim(),
+      description: input.description.trim(),
+      categoryId: category.id,
+      requesterId: actor.id,
     });
 
     return this.getById(actor, requestId);
@@ -131,7 +84,7 @@ export class RequestsService {
     const current = await this.findVisible(actor, id);
     const assignee =
       input.assigneeId && input.assigneeId !== current.assigneeId
-        ? await this.prisma.user.findUnique({ where: { id: input.assigneeId } })
+        ? await this.requests.findAssignee(input.assigneeId)
         : null;
 
     if (input.assigneeId && input.assigneeId !== current.assigneeId && !assignee) {
@@ -150,7 +103,7 @@ export class RequestsService {
         {
           status: input.status,
           assignee: assignee
-            ? { id: assignee.id, role: assignee.role as Role, active: assignee.active }
+            ? { id: assignee.id, role: assignee.role, active: assignee.active }
             : undefined,
         },
       );
@@ -158,28 +111,7 @@ export class RequestsService {
       rethrowDomain(error);
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.request.update({
-        where: { id },
-        data: {
-          status: planned.status as PrismaRequestStatus,
-          assigneeId: planned.assigneeId,
-        },
-      });
-      for (const event of planned.events) {
-        await tx.requestHistory.create({
-          data: {
-            requestId: id,
-            actorId: actor.id,
-            type: event.type as PrismaHistoryType,
-            fromStatus: event.fromStatus as PrismaRequestStatus | null,
-            toStatus: event.toStatus as PrismaRequestStatus | null,
-            note: historyNote(event, assignee?.fullName),
-          },
-        });
-      }
-    });
-
+    await this.requests.applyChange(id, actor.id, planned, assignee?.fullName);
     return this.getById(actor, id);
   }
 
@@ -198,52 +130,19 @@ export class RequestsService {
       throw new ForbiddenException("No puedes comentar esta solicitud.");
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.requestComment.create({
-        data: {
-          requestId: id,
-          authorId: actor.id,
-          body: input.body.trim(),
-        },
-      });
-      await tx.requestHistory.create({
-        data: {
-          requestId: id,
-          actorId: actor.id,
-          type: HistoryType.COMMENTED as PrismaHistoryType,
-          note: "Se agregó un comentario.",
-        },
-      });
-      await tx.request.update({
-        where: { id },
-        data: { updatedAt: new Date() },
-      });
-    });
-
+    await this.requests.addComment(id, actor.id, input.body.trim());
     return this.getById(actor, id);
   }
 
-  private visibilityWhere(actor: AuthenticatedUser): Prisma.RequestWhereInput {
+  private scope(actor: AuthenticatedUser): RequestScope {
     return actor.role === Role.USER ? { requesterId: actor.id } : {};
   }
 
   private async findVisible(actor: AuthenticatedUser, id: string): Promise<DetailRecord> {
-    const request = await this.prisma.request.findUnique({
-      where: { id },
-      include: requestDetailInclude,
-    });
+    const request = await this.requests.findDetail(id);
     if (!request || !canViewRequest(actor, request.requesterId)) {
       throw new NotFoundException("Solicitud no encontrada.");
     }
     return request;
-  }
-
-  private async nextCode(tx: Prisma.TransactionClient): Promise<string> {
-    const row = await tx.requestCounter.upsert({
-      where: { id: 1 },
-      create: { id: 1, value: 1 },
-      update: { value: { increment: 1 } },
-    });
-    return `CF-${String(row.value).padStart(4, "0")}`;
   }
 }

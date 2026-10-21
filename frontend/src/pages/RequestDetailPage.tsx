@@ -2,13 +2,28 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { AssigneeOption, RequestDetail, RequestStatus } from "../api/types";
+import { useAuth } from "../auth/AuthContext";
 import { StatusBadge } from "../components/StatusBadge";
-import { STATUS_ACTION, STATUS_LABEL, formatWhen } from "../domain/labels";
+import { HISTORY_LABEL, ROLE_LABEL, STATUS_ACTION, STATUS_HINT, STATUS_LABEL, formatWhen } from "../domain/labels";
+import type { Role } from "../api/types";
 
 const PATH: RequestStatus[] = ["PENDING", "IN_REVIEW", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
+function roleNote(role: Role, isRequester: boolean): string {
+  if (role === "USER") {
+    return isRequester
+      ? "Entras como estudiante y esta solicitud es tuya. Puedes comentar y retirarla mientras siga pendiente o en revisión."
+      : "Entras como estudiante. Solo puedes abrir las solicitudes que tú radicaste.";
+  }
+  if (role === "STAFF") {
+    return "Entras como personal encargado. Puedes tomar un pendiente y avanzar el estado cuando el caso está a tu cargo.";
+  }
+  return "Entras como administrador. Puedes asignar un responsable y mover el estado.";
+}
+
 export function RequestDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [request, setRequest] = useState<RequestDetail | null>(null);
   const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
   const [assigneeId, setAssigneeId] = useState("");
@@ -84,22 +99,28 @@ export function RequestDetailPage() {
     );
   }
 
+  const current = PATH.indexOf(request.status);
+
   return (
-    <section className="detail">
-      <header className="page-header">
+    <section className="page record">
+      <header className="record-head">
         <div>
           <p className="code">{request.code}</p>
+          <p className="identifier">Identificador {request.id}</p>
           <h1>{request.title}</h1>
         </div>
         <StatusBadge status={request.status} />
       </header>
-      <p>{request.description}</p>
+      {user && <p className="panel panel-pad role-note">{roleNote(user.role, user.id === request.requester.id)}</p>}
+      <section>
+        <h2>Recorrido</h2>
+        <p className="sub">Estado actual: {STATUS_LABEL[request.status]}. {STATUS_HINT[request.status]}</p>
+      </section>
       {request.status === "CANCELLED" ? (
-        <p className="field-note">Esta solicitud se canceló y ya no continúa el recorrido.</p>
+        <p className="alert">Este caso salió del recorrido. Quedó cancelado.</p>
       ) : (
         <ol className="stepper" aria-label="Recorrido de la solicitud">
           {PATH.map((status, index) => {
-            const current = PATH.indexOf(request.status);
             const state = index < current ? "done" : index === current ? "current" : "";
             return (
               <li key={status} className={state} aria-current={state === "current" ? "step" : undefined}>
@@ -109,7 +130,11 @@ export function RequestDetailPage() {
           })}
         </ol>
       )}
-      <dl className="meta">
+      <section className="panel panel-pad">
+        <h2>Descripción</h2>
+        <p className="description">{request.description}</p>
+      </section>
+      <dl className="panel facts">
         <div>
           <dt>Categoría</dt>
           <dd>{request.category.name}</dd>
@@ -145,7 +170,7 @@ export function RequestDetailPage() {
                 ))}
               </select>
             </label>
-            <button type="submit" disabled={pending || !assigneeId}>
+            <button className="btn btn-primary" type="submit" disabled={pending || !assigneeId}>
               Asignar
             </button>
           </form>
@@ -154,7 +179,7 @@ export function RequestDetailPage() {
           <button
             key={status}
             type="button"
-            className={status === "CANCELLED" ? "danger" : undefined}
+            className={status === "CANCELLED" ? "btn btn-danger" : "btn btn-secondary"}
             disabled={pending}
             onClick={() => setConfirmStatus(status)}
           >
@@ -163,9 +188,10 @@ export function RequestDetailPage() {
         ))}
       </div>
       {confirmStatus && (
-        <div className="card confirm">
+        <div className="confirm">
           <p>¿Confirmas esta acción: {STATUS_ACTION[confirmStatus]}?</p>
           <button
+            className="btn btn-primary"
             type="button"
             disabled={pending}
             onClick={() =>
@@ -179,14 +205,15 @@ export function RequestDetailPage() {
           >
             Confirmar
           </button>
-          <button type="button" className="secondary" onClick={() => setConfirmStatus(null)}>
+          <button type="button" className="btn btn-secondary" onClick={() => setConfirmStatus(null)}>
             Volver
           </button>
         </div>
       )}
+      <section className="panel panel-pad">
       <h2>Comentarios</h2>
-      {request.comments.length === 0 && <p>Todavía no hay comentarios.</p>}
-      <ul className="timeline">
+      {request.comments.length === 0 && <p className="field-note">Todavía no hay comentarios.</p>}
+      <ul className="feed">
         {request.comments.map((item) => (
           <li key={item.id}>
             <strong>{item.author.fullName}</strong>
@@ -201,21 +228,31 @@ export function RequestDetailPage() {
             Nuevo comentario
             <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={3} />
           </label>
-          <button type="submit" disabled={pending}>
+          <button className="btn btn-primary" type="submit" disabled={pending}>
             Publicar comentario
           </button>
         </form>
       )}
-      <h2>Historial</h2>
-      <ol className="timeline">
+      </section>
+      <section className="panel panel-pad">
+      <h2>Trazabilidad</h2>
+      <p className="field-note">Quién hizo el cambio, cuándo y qué ocurrió.</p>
+      <ol className="feed">
         {request.history.map((entry) => (
           <li key={entry.id}>
             <strong>{entry.actor.fullName}</strong>
-            <span>{formatWhen(entry.createdAt)}</span>
+            <span>
+              {entry.actor.role in ROLE_LABEL ? ROLE_LABEL[entry.actor.role as Role] : entry.actor.role}
+              {" · "}
+              {HISTORY_LABEL[entry.type] ?? entry.type}
+              {" · "}
+              {formatWhen(entry.createdAt)}
+            </span>
             <p>{entry.note}</p>
           </li>
         ))}
       </ol>
+      </section>
     </section>
   );
 }

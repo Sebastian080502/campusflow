@@ -1,12 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { Category } from "../api/types";
-import { CategoryMark } from "../components/CampusArt";
 
 export function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   async function reload() {
     setCategories(await api<Category[]>("/api/categories"));
@@ -32,6 +32,7 @@ export function CategoriesPage() {
         }),
       });
       event.currentTarget.reset();
+      setCreating(false);
       await reload();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo crear la categoría.");
@@ -54,56 +55,74 @@ export function CategoriesPage() {
   }
 
   return (
-    <section>
+    <section className="page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Campus</p>
-          <h1>Categorías</h1>
-          <p className="lede">
-            Cada solicitud nace en una categoría activa. Si la apagas, deja de aparecer al crear una nueva.
-          </p>
+          <h1>Oficios</h1>
+          <p className="sub">Gestiona las categorías disponibles para clasificar las solicitudes.</p>
         </div>
+        <button className="btn btn-primary" type="button" onClick={() => setCreating((value) => !value)}>
+          Nueva categoría
+        </button>
       </header>
       {error && (
         <p className="alert" role="alert">
           {error}
         </p>
       )}
-      <form className="card form-grid" onSubmit={create}>
-        <h2>Nueva categoría</h2>
-        <label>
-          Nombre
-          <input name="name" required minLength={3} maxLength={80} />
-        </label>
-        <label>
-          Descripción
-          <input name="description" maxLength={500} />
-        </label>
-        <button type="submit" disabled={pending}>
-          {pending ? "Guardando…" : "Crear categoría"}
-        </button>
-      </form>
-      <ul className="category-list">
+      {creating && (
+        <form className="panel panel-pad form-grid composer" onSubmit={create}>
+          <h2>Nueva categoría</h2>
+          <label>
+            Nombre de la categoría
+            <input name="name" required minLength={3} maxLength={80} />
+          </label>
+          <label>
+            Descripción
+            <input name="description" maxLength={500} />
+          </label>
+          <div className="btn-row">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.form?.reset();
+                setCreating(false);
+              }}
+            >
+              Cancelar
+            </button>
+            <button className="btn btn-primary" type="submit" disabled={pending}>
+              {pending ? "Guardando…" : "Crear categoría"}
+            </button>
+          </div>
+        </form>
+      )}
+      <div className="panel rows">
+        {categories.length === 0 && (
+          <p className="empty">
+            <strong>Sin oficios</strong>
+            Crea la primera categoría para clasificar solicitudes.
+          </p>
+        )}
         {categories.map((category) => (
-          <li key={category.id}>
-            <div className="category-title">
-              <CategoryMark name={category.name} />
-              <div>
-                <strong>{category.name}</strong>
-                <p>{category.description}</p>
-              </div>
+          <div className="row" key={category.id}>
+            <div>
+              <strong>{category.name}</strong>
+              {category.description && <p>{category.description}</p>}
             </div>
             <button
               type="button"
-              className={`switch${category.active ? " on" : ""}`}
+              className={`badge${category.active ? " on" : ""}`}
               aria-pressed={category.active}
               onClick={() => toggle(category)}
             >
+              <span className="dot" aria-hidden="true" />
               {category.active ? "Activa" : "Inactiva"}
             </button>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }

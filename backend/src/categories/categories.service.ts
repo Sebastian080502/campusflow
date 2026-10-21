@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { AuthenticatedUser, Role } from "../domain/request-policy";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCategoryDto, UpdateCategoryDto } from "./dto/category.dto";
@@ -29,17 +22,13 @@ export class CategoriesService {
     });
   }
 
-  async create(input: CreateCategoryDto) {
-    try {
-      return await this.prisma.category.create({
-        data: {
-          name: input.name,
-          description: input.description || null,
-        },
-      });
-    } catch (error) {
-      this.rethrowUnique(error);
-    }
+  create(input: CreateCategoryDto) {
+    return this.prisma.category.create({
+      data: {
+        name: input.name,
+        description: input.description || null,
+      },
+    });
   }
 
   async update(id: string, input: UpdateCategoryDto) {
@@ -51,27 +40,13 @@ export class CategoriesService {
       throw new BadRequestException("Indica al menos un cambio.");
     }
 
-    try {
-      return await this.prisma.category.update({
-        where: { id },
-        data: {
-          name: input.name,
-          description: input.description === undefined ? undefined : input.description || null,
-          active: input.active,
-        },
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-        throw new NotFoundException("Categoría no encontrada.");
-      }
-      this.rethrowUnique(error);
-    }
-  }
-
-  private rethrowUnique(error: unknown): never {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      throw new ConflictException("Ya existe una categoría con ese nombre.");
-    }
-    throw error;
+    return this.prisma.category.update({
+      where: { id },
+      data: {
+        name: input.name,
+        description: input.description === undefined ? undefined : input.description || null,
+        active: input.active,
+      },
+    });
   }
 }

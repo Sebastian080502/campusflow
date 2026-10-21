@@ -29,7 +29,7 @@ export const requestDetailInclude = {
 
 type Person = { id: string; fullName: string; role: string };
 
-type ListRecord = {
+export type ListRecord = {
   id: string;
   code: string;
   title: string;

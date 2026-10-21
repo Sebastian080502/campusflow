@@ -12,4 +12,4 @@
 
 ## Construcción
 
-`npm run build` en cada paquete debe pasar antes de promover a `qa`. Promover a `main` pide además que las pruebas de extremo a extremo hayan podido ejecutarse.
+`npm run build` en cada paquete y `npm run test:e2e` corren en la integración continua antes de publicar imágenes desde `main`.

@@ -37,7 +37,11 @@ export function PasswordField({
           aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
           onClick={() => setVisible((current) => !current)}
         >
-          {visible ? "Ocultar" : "Mostrar"}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+            <circle cx="12" cy="12" r="2.5" />
+            {visible && <path d="M4 5l16 14" />}
+          </svg>
         </button>
       </div>
     </div>

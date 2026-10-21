@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { CampusScene } from "../components/CampusArt";
+import { Mark } from "../components/Icons";
 import { PasswordField } from "../components/PasswordField";
 
 export function RegisterPage() {
@@ -21,11 +21,7 @@ export function RegisterPage() {
     setPending(true);
     setError("");
     try {
-      await register(
-        String(form.get("fullName") ?? ""),
-        String(form.get("email") ?? ""),
-        password,
-      );
+      await register(String(form.get("fullName") ?? ""), String(form.get("email") ?? ""), password);
       navigate("/");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No se pudo crear la cuenta.");
@@ -35,17 +31,17 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="auth-screen">
-      <div className="auth-hero">
-        <CampusScene />
-        <p className="eyebrow">CampusFlow</p>
-        <h1>Abre tu cuenta y deja la solicitud en marcha.</h1>
-        <p>El registro público crea solo cuentas de estudiante. El personal lo habilita un administrador.</p>
-      </div>
-      <form className="card auth-card" onSubmit={onSubmit}>
-        <CampusScene compact />
-        <p className="brand">Crear cuenta</p>
-        <p>Usa un correo que todavía no esté registrado.</p>
+    <section className="auth">
+      <form className="panel auth-card" onSubmit={onSubmit}>
+        <div className="auth-brand">
+          <Mark />
+          <div>
+            <p className="brand">CampusFlow</p>
+            <p className="brand-sub">Operaciones del campus</p>
+          </div>
+        </div>
+        <h1>Crear cuenta</h1>
+        <p className="sub">El registro público abre solo cuentas de estudiante.</p>
         <label>
           Nombre completo
           <input name="fullName" required minLength={3} maxLength={120} />
@@ -54,23 +50,18 @@ export function RegisterPage() {
           Correo
           <input name="email" type="email" autoComplete="email" required />
         </label>
-        <PasswordField
-          name="password"
-          label="Contraseña"
-          autoComplete="new-password"
-          minLength={8}
-        />
-        <p className="field-note">Mínimo 8 caracteres. Puedes mostrarla para revisarla antes de crear la cuenta.</p>
+        <PasswordField name="password" label="Contraseña" autoComplete="new-password" minLength={8} />
+        <p className="field-note">Mínimo 8 caracteres. El ojo del campo la muestra antes de continuar.</p>
         {error && (
           <p className="alert" role="alert">
             {error}
           </p>
         )}
-        <button type="submit" disabled={pending}>
+        <button className="btn btn-primary" type="submit" disabled={pending}>
           {pending ? "Creando…" : "Crear cuenta"}
         </button>
-        <p>
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+        <p className="field-note">
+          ¿Ya tienes cuenta? <Link to="/login">Entrar</Link>
         </p>
       </form>
     </section>

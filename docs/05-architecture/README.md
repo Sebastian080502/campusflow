@@ -6,6 +6,8 @@ CampusFlow es un monolito modular. Un proceso de API atiende el dominio y un cli
 
 - [Contexto C4](c4-context.md)
 - [Contenedores C4](c4-containers.md)
+- [Componentes C4](c4-components.md)
+- [Despliegue](deployment.md)
 
 ## Decisiones
 
@@ -17,4 +19,5 @@ CampusFlow es un monolito modular. Un proceso de API atiende el dominio y un cli
 | [004](adr/004-role-enum.md) | Roles USER, STAFF y ADMIN |
 | [005](adr/005-status-machine.md) | Máquina de estados de la solicitud |
 | [006](adr/006-language.md) | Español en producto, inglés en código |
-| [007](adr/007-environment-branches.md) | Ramas dev, qa y main |
+| [007](adr/007-environment-branches.md) | Ramas de ambiente, reemplazada |
+| [008](adr/008-github-flow.md) | GitHub Flow: `main` desplegable por pull request |

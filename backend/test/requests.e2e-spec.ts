@@ -41,7 +41,7 @@ describe("critical request flow", () => {
 
     const prisma = app.get(PrismaService);
     await prisma.$executeRawUnsafe(
-      'TRUNCATE TABLE "RequestHistory", "RequestComment", "Request", "Category", "User", "RequestCounter" RESTART IDENTITY CASCADE;',
+      'TRUNCATE TABLE "PasswordResetToken", "RequestHistory", "RequestComment", "Request", "Category", "User", "RequestCounter" RESTART IDENTITY CASCADE;',
     );
     await seed(prisma);
   });
@@ -138,6 +138,12 @@ describe("critical request flow", () => {
       .set("Authorization", `Bearer ${admin.token}`)
       .send({ name: "Bienestar", description: "Apoyo estudiantil." });
     expect(category.status).toBe(201);
+
+    const duplicate = await request(app.getHttpServer())
+      .post("/api/categories")
+      .set("Authorization", `Bearer ${admin.token}`)
+      .send({ name: "Bienestar", description: "Repetida." });
+    expect(duplicate.status).toBe(409);
 
     const staffDenied = await request(app.getHttpServer())
       .post("/api/categories")

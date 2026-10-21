@@ -1,20 +1,8 @@
 # Convenciones de Git
 
-## Ramas de ambiente
+## Ramas
 
-| Rama | Ambiente | Qué contiene |
-| --- | --- | --- |
-| `dev` | Desarrollo | Todo el trabajo nuevo. Es la única rama donde se integran incrementos en curso. |
-| `qa` | Aseguramiento | Promoción del incremento de `dev` que ya compila y cuyas pruebas unitarias pasan. Es el objetivo de promoción antes de producción. |
-| `main` | Producción | Solo incrementos verificados: pruebas unitarias en verde y build de API y cliente. No se reescribe su historia. |
-
-`qa` nace desde `main` cuando todavía solo contiene el README inicial, y permanece como destino de promoción. El trabajo inacabado no se fusiona a `main`.
-
-Flujo:
-
-1. Crear el cambio en `dev`.
-2. Cuando el slice compila y las pruebas unitarias pasan, fusionar `dev` en `qa` (fast-forward o merge) y publicar `qa`.
-3. Fusionar `qa` en `main` solo si además el proyecto construye. Si las pruebas de extremo a extremo no pueden correr porque falta PostgreSQL, `main` se queda como está.
+`main` es la rama desplegable. El cambio nuevo sale de `main` en una rama corta (`feat/`, `fix/`, `refactor/`, `chore/`), con un commit por cambio, y entra por pull request. GitHub debe rechazar el push directo a `main`. La historia de `main` no se reescribe.
 
 No hay force push. No se usa `--no-verify`. No se cambia la configuración de Git del entorno.
 

@@ -4,7 +4,9 @@ import { Layout } from "./components/Layout";
 import { CategoriesPage } from "./pages/CategoriesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { RecoverPasswordPage } from "./pages/RecoverPasswordPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
 import { RequestFormPage } from "./pages/RequestFormPage";
 import { RequestListPage } from "./pages/RequestListPage";
@@ -15,6 +17,8 @@ export function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegisterPage />} />
+      <Route path="/recuperar" element={<RecoverPasswordPage />} />
+      <Route path="/restablecer" element={<ResetPasswordPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />

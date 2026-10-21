@@ -15,7 +15,7 @@ import { JwtStrategy } from "./jwt.strategy";
       inject: [APP_ENV],
       useFactory: (env: AppEnv) => ({
         secret: env.jwtSecret,
-        signOptions: { expiresIn: "8h" },
+        signOptions: { expiresIn: env.jwtExpiresIn as `${number}${"s" | "m" | "h" | "d"}` },
       }),
     }),
   ],

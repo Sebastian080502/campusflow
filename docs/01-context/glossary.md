@@ -12,7 +12,7 @@
 | Comentario | Nota visible en la solicitud mientras no esté en un estado terminal. |
 | Rol | `USER` (estudiante), `STAFF` (personal encargado) o `ADMIN` (administrador). |
 | Código | Identificador legible y único, generado con un contador (`CF-0001`). |
-| JWT | Token bearer de 8 horas. Solo lleva el identificador del usuario. |
+| JWT | Token bearer. Dura lo que indique `JWT_EXPIRES_IN` (por defecto 8 horas) y solo lleva el identificador del usuario. |
 | Semilla | Datos iniciales de categorías y, si hay contraseñas de entorno, cuentas de demostración. |
-| Ambiente | `dev` (desarrollo), `qa` (aseguramiento) o `main` (producción). |
+| Ambiente | Desarrollo local, o producción en `main` desplegada a la EC2. |
 | Monolito modular | Una API y un cliente desplegados juntos, con módulos internos separados, sin servicios independientes. |

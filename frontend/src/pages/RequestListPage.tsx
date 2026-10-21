@@ -51,19 +51,18 @@ export function RequestListPage() {
   }
 
   return (
-    <section>
+    <section className="page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Seguimiento</p>
-          <h1>{user?.role === "USER" ? "Mis solicitudes" : "Solicitudes del campus"}</h1>
-          <p className="lede">
+          <h1>{user?.role === "USER" ? "Mis solicitudes" : "Expedientes"}</h1>
+          <p className="sub">
             {user?.role === "USER"
-              ? "Solo ves las que tú enviaste. Abre el título para seguir el recorrido."
-              : "Abre el título para asignar, comentar o cambiar el estado."}
+              ? "Solo ves las que tú enviaste. El código abre el caso."
+              : "El código abre el caso para asignar, comentar o cambiar el estado."}
           </p>
         </div>
         {user?.role === "USER" && (
-          <Link className="button-link" to="/solicitudes/nueva">
+          <Link className="btn btn-primary" to="/solicitudes/nueva">
             Nueva solicitud
           </Link>
         )}
@@ -95,7 +94,9 @@ export function RequestListPage() {
           Buscar
           <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Código o título" />
         </label>
-        <button type="submit">Filtrar</button>
+        <button className="btn btn-secondary" type="submit">
+          Filtrar
+        </button>
       </form>
       {error && (
         <p className="alert" role="alert">
@@ -103,9 +104,14 @@ export function RequestListPage() {
         </p>
       )}
       {!page && !error && <p className="status-line">Cargando solicitudes…</p>}
-      {page && page.items.length === 0 && <p className="empty">No hay solicitudes con esos criterios.</p>}
+      {page && page.items.length === 0 && (
+        <div className="panel empty">
+          <strong>Sin resultados</strong>
+          No hay solicitudes con esos criterios.
+        </div>
+      )}
       {page && page.items.length > 0 && (
-        <div className="table-wrap">
+        <div className="panel table-wrap">
           <table>
             <thead>
               <tr>
@@ -121,7 +127,11 @@ export function RequestListPage() {
               {page.items.map((item) => (
                 <tr key={item.id}>
                   <td data-label="Código">
-                    <Link to={`/solicitudes/${item.id}`}>{item.code}</Link>
+                    <Link className="code" to={`/solicitudes/${item.id}`}>
+                      {item.code}
+                    </Link>
+                    <span className="identifier">{item.id}</span>
+                    <span className="identifier">{item.id}</span>
                   </td>
                   <td data-label="Título">
                     <Link to={`/solicitudes/${item.id}`}>{item.title}</Link>

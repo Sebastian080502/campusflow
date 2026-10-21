@@ -2,9 +2,12 @@ export interface AppEnv {
   port: number;
   databaseUrl: string;
   jwtSecret: string;
+  jwtExpiresIn: string;
+  appVersion: string;
   corsOrigin: string;
   appEnv: string;
   seedOnStart: boolean;
+  exposeResetToken: boolean;
 }
 
 export function readAppEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
@@ -23,13 +26,21 @@ export function readAppEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     throw new Error("PORT debe ser un entero positivo.");
   }
 
+  const appEnv = source.APP_ENV ?? source.NODE_ENV ?? "development";
+  const exposeResetToken =
+    source.EXPOSE_RESET_TOKEN === "true" ||
+    (source.EXPOSE_RESET_TOKEN !== "false" && appEnv !== "production");
+
   return {
     port,
     databaseUrl,
     jwtSecret,
+    jwtExpiresIn: source.JWT_EXPIRES_IN?.trim() || "8h",
+    appVersion: source.APP_VERSION?.trim() || "dev",
     corsOrigin: source.CORS_ORIGIN ?? "http://localhost:5173",
-    appEnv: source.APP_ENV ?? source.NODE_ENV ?? "development",
+    appEnv,
     seedOnStart: source.SEED_ON_START === "true",
+    exposeResetToken,
   };
 }
 

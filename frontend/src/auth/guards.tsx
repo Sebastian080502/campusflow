@@ -17,9 +17,9 @@ export function RequireRole({ roles }: { roles: Role[] }) {
   const { user } = useAuth();
   if (!user || !roles.includes(user.role)) {
     return (
-      <section className="card">
+      <section className="panel denied">
         <h1>Sin permiso</h1>
-        <p>Tu rol no puede abrir esta sección.</p>
+        <p className="sub">Tu rol no puede abrir esta sección.</p>
       </section>
     );
   }
