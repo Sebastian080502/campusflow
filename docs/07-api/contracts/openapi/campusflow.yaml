@@ -100,38 +100,6 @@ paths:
           description: Contraseña actualizada
         "400":
           $ref: "#/components/responses/Error"
-  /api/auth/forgot-password:
-    post:
-      summary: Pide un código para restablecer la contraseña. No revela si el correo existe.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ForgotPassword"
-      responses:
-        "200":
-          description: Mensaje genérico. En local puede incluir resetToken si EXPOSE_RESET_TOKEN=true.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ForgotPasswordResult"
-  /api/auth/reset-password:
-    post:
-      summary: Cambia la contraseña con un código vigente de un solo uso.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ResetPassword"
-      responses:
-        "200":
-          description: Contraseña actualizada
-        "400":
-          $ref: "#/components/responses/Error"
   /api/auth/me:
     get:
       summary: Usuario de la sesion
@@ -446,29 +414,6 @@ components:
         fullName:
           type: string
         email:
-          type: string
-        password:
-          type: string
-    ForgotPassword:
-      type: object
-      required: [email]
-      properties:
-        email:
-          type: string
-    ForgotPasswordResult:
-      type: object
-      required: [message]
-      properties:
-        message:
-          type: string
-        resetToken:
-          type: string
-          description: Solo se entrega cuando el entorno local expone el código porque no hay correo.
-    ResetPassword:
-      type: object
-      required: [token, password]
-      properties:
-        token:
           type: string
         password:
           type: string
