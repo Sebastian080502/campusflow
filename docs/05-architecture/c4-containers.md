@@ -2,15 +2,19 @@
 
 ```mermaid
 flowchart LR
-  browser[Navegador]
-  subgraph red [Red de Compose]
-    web["web\nnginx 1.27 + build React/Vite\n:80"]
-    api["api\nNode 22 + NestJS\n:3000\nsolo red interna"]
+  usuario([Estudiante · Personal · Admin]) -->|HTTP :80| web
+  ghcr[GHCR] -->|imagenes| web
+  ghcr -->|imagenes| api
+  ghcr -->|imagenes| migrate
+  subgraph red [EC2 t3.micro]
+    web["web\nnginx 1.27 + React/Vite\nhealthcheck :80"]
+    migrate["migrate\nprisma migrate deploy\ntermina antes de api"]
+    api["api\nNode 22 + NestJS\nhealthcheck :3000\nsolo red interna"]
     db[("db\nPostgreSQL 16\n:5432\nsolo red interna")]
     vol[("volumen campusflow-db")]
   end
-  browser -->|HTTP :80| web
-  web -->|"/api hacia api:3000"| api
+  web -->|"/api/*"| api
+  migrate -->|termina| api
   api -->|Prisma| db
   db --- vol
 ```
