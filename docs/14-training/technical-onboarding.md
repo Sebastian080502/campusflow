@@ -6,6 +6,6 @@
 4. En `backend`: `npm install`, `npx prisma generate`, `npm test`, `npm run build`.
 5. En `frontend`: `npm install`, `npm test`, `npm run dev`. Vite queda en el puerto 5173.
 6. Entra con una cuenta de semilla o regístrate como estudiante.
-7. El cambio sale de `main` en una rama corta y entra por pull request. Conventional Commits, en inglés.
+7. El cambio sale de `main` en una rama corta y entra por pull request. Conventional Commits, en inglés. La imagen del cliente usa Nginx 1.27 y, en el mismo build, actualiza OpenSSL.
 
 La política de estados está aislada en `backend/src/domain/request-policy.ts`. Las pruebas de ese archivo no necesitan base de datos.
