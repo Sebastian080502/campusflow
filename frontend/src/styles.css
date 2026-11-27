@@ -260,6 +260,9 @@ button.badge { font: inherit; }
   margin-bottom: 16px;
 }
 .table-wrap { overflow: auto; }
+.pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 13px; }
+.pagination > div { display: flex; align-items: center; gap: 8px; }
+.pagination-page { white-space: nowrap; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 14px; }
 th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 700; background: #fafbfc; }
@@ -318,6 +321,7 @@ td .code, .table-wrap td:first-child a { font-family: "IBM Plex Mono", ui-monosp
 .denied { max-width: 480px; padding: 24px; display: grid; gap: 8px; }
 
 @media (max-width: 900px) {
+  .pagination { align-items: flex-start; flex-direction: column; }
   .app { grid-template-columns: 1fr; }
   .sidebar {
     position: fixed;

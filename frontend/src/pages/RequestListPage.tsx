@@ -16,11 +16,12 @@ export function RequestListPage() {
   const [categoryId, setCategoryId] = useState(params.get("categoryId") ?? "");
   const [q, setQ] = useState(params.get("q") ?? "");
 
-  async function load(nextStatus = status, nextCategory = categoryId, nextQuery = q) {
+  async function load(nextStatus = status, nextCategory = categoryId, nextQuery = q, nextPage = Number(params.get("page") ?? "1")) {
     const params = new URLSearchParams();
     if (nextStatus) params.set("status", nextStatus);
     if (nextCategory) params.set("categoryId", nextCategory);
     if (nextQuery) params.set("q", nextQuery);
+    if (nextPage > 1) params.set("page", String(nextPage));
     const suffix = params.size ? `?${params.toString()}` : "";
     const result = await api<RequestPage>(`/api/requests${suffix}`);
     setPage(result);
@@ -30,10 +31,11 @@ export function RequestListPage() {
     const nextStatus = params.get("status") ?? "";
     const nextCategory = params.get("categoryId") ?? "";
     const nextQuery = params.get("q") ?? "";
+    const nextPage = Number(params.get("page") ?? "1");
     setStatus(nextStatus);
     setCategoryId(nextCategory);
     setQ(nextQuery);
-    load(nextStatus, nextCategory, nextQuery).catch((caught: unknown) =>
+    load(nextStatus, nextCategory, nextQuery, nextPage).catch((caught: unknown) =>
       setError(caught instanceof Error ? caught.message : "No se pudieron cargar las solicitudes."),
     );
     api<Category[]>("/api/categories")
@@ -131,7 +133,6 @@ export function RequestListPage() {
                       {item.code}
                     </Link>
                     <span className="identifier">{item.id}</span>
-                    <span className="identifier">{item.id}</span>
                   </td>
                   <td data-label="Título">
                     <Link to={`/solicitudes/${item.id}`}>{item.title}</Link>
@@ -147,6 +148,26 @@ export function RequestListPage() {
             </tbody>
           </table>
         </div>
+      )}
+      {page && page.total > 0 && (
+        <nav className="pagination" aria-label="Paginación de solicitudes">
+          <span>Mostrando {(page.page - 1) * page.pageSize + 1}–{Math.min(page.page * page.pageSize, page.total)} de {page.total} solicitudes</span>
+          <div>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={page.page <= 1}
+              onClick={() => { const next = new URLSearchParams(params); next.set("page", String(page.page - 1)); setParams(next); }}
+            >Anterior</button>
+            <span className="pagination-page">Página {page.page} de {Math.max(1, Math.ceil(page.total / page.pageSize))}</span>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={page.page * page.pageSize >= page.total}
+              onClick={() => { const next = new URLSearchParams(params); next.set("page", String(page.page + 1)); setParams(next); }}
+            >Siguiente</button>
+          </div>
+        </nav>
       )}
     </section>
   );
