@@ -127,6 +127,7 @@ jobs:
           ssh $ssh_opts "${user}@${EC2_HOST}" "mkdir -p ~/campusflow"
           scp $ssh_opts compose.prod.yml "${user}@${EC2_HOST}:~/campusflow/compose.prod.yml"
           printf '%s' "$GH_TOKEN" | ssh $ssh_opts "${user}@${EC2_HOST}" "docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin"
+          ssh $ssh_opts "${user}@${EC2_HOST}" "docker image prune --all --force"
           ssh $ssh_opts "${user}@${EC2_HOST}" "cd ~/campusflow && IMAGE=${image} TAG=${tag} docker compose -f compose.prod.yml pull && IMAGE=${image} TAG=${tag} docker compose -f compose.prod.yml up -d --wait"
           body=$(curl -fsS "http://${EC2_HOST}/api/health")
           printf '%s\n' "$body"
