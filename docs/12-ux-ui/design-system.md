@@ -15,3 +15,5 @@ Cada expediente muestra el código `CF-` y, debajo, el identificador interno. La
 Los errores usan `role="alert"`. En móvil las tablas se leen con `data-label`. Si el sistema pide menos movimiento, las transiciones se apagan.
 
 La lista de expedientes conserva los filtros en la URL y muestra páginas de 20 resultados con el rango visible y el total. Los controles anterior y siguiente permiten recorrer las páginas; en pantallas estrechas se apilan. Cada fila presenta el código y una sola vez el identificador interno.
+
+En la bandeja del personal encargado, la opción «Solo mis casos» filtra por el responsable de la sesión actual. El filtro se conserva en la URL junto con estado, categoría, búsqueda y paginación.
