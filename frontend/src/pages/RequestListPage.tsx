@@ -15,12 +15,20 @@ export function RequestListPage() {
   const [status, setStatus] = useState(params.get("status") ?? "");
   const [categoryId, setCategoryId] = useState(params.get("categoryId") ?? "");
   const [q, setQ] = useState(params.get("q") ?? "");
+  const [mineOnly, setMineOnly] = useState(params.get("mine") === "1");
 
-  async function load(nextStatus = status, nextCategory = categoryId, nextQuery = q, nextPage = Number(params.get("page") ?? "1")) {
+  async function load(
+    nextStatus = status,
+    nextCategory = categoryId,
+    nextQuery = q,
+    nextPage = Number(params.get("page") ?? "1"),
+    nextMineOnly = mineOnly,
+  ) {
     const params = new URLSearchParams();
     if (nextStatus) params.set("status", nextStatus);
     if (nextCategory) params.set("categoryId", nextCategory);
     if (nextQuery) params.set("q", nextQuery);
+    if (nextMineOnly && user?.role === "STAFF" && user.id) params.set("assigneeId", user.id);
     if (nextPage > 1) params.set("page", String(nextPage));
     const suffix = params.size ? `?${params.toString()}` : "";
     const result = await api<RequestPage>(`/api/requests${suffix}`);
@@ -32,10 +40,12 @@ export function RequestListPage() {
     const nextCategory = params.get("categoryId") ?? "";
     const nextQuery = params.get("q") ?? "";
     const nextPage = Number(params.get("page") ?? "1");
+    const nextMineOnly = params.get("mine") === "1";
     setStatus(nextStatus);
     setCategoryId(nextCategory);
     setQ(nextQuery);
-    load(nextStatus, nextCategory, nextQuery, nextPage).catch((caught: unknown) =>
+    setMineOnly(nextMineOnly);
+    load(nextStatus, nextCategory, nextQuery, nextPage, nextMineOnly).catch((caught: unknown) =>
       setError(caught instanceof Error ? caught.message : "No se pudieron cargar las solicitudes."),
     );
     api<Category[]>("/api/categories")
@@ -49,6 +59,7 @@ export function RequestListPage() {
     if (status) next.set("status", status);
     if (categoryId) next.set("categoryId", categoryId);
     if (q.trim()) next.set("q", q.trim());
+    if (mineOnly && user?.role === "STAFF") next.set("mine", "1");
     setParams(next);
   }
 
@@ -69,7 +80,7 @@ export function RequestListPage() {
           </Link>
         )}
       </header>
-      <form className="filters" onSubmit={onFilter}>
+      <form className={`filters${user?.role === "STAFF" ? " filters-with-mine" : ""}`} onSubmit={onFilter}>
         <label>
           Estado
           <select value={status} onChange={(event) => setStatus(event.target.value)}>
@@ -96,6 +107,12 @@ export function RequestListPage() {
           Buscar
           <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Código o título" />
         </label>
+        {user?.role === "STAFF" && (
+          <label className="checkbox-filter">
+            <input type="checkbox" checked={mineOnly} onChange={(event) => setMineOnly(event.target.checked)} />
+            Solo mis casos
+          </label>
+        )}
         <button className="btn btn-secondary" type="submit">
           Filtrar
         </button>
