@@ -13,3 +13,5 @@ Los listados son tablas o filas dentro de un panel. Los formularios de alta se a
 Cada expediente muestra el código `CF-` y, debajo, el identificador interno. La descripción tiene su propio bloque. El recorrido marca el estado actual y la trazabilidad nombra a la persona, el momento y el cambio. El acceso incluye recuperación de contraseña y un enlace a la documentación de la API en `/api/docs`.
 
 Los errores usan `role="alert"`. En móvil las tablas se leen con `data-label`. Si el sistema pide menos movimiento, las transiciones se apagan.
+
+La lista de expedientes conserva los filtros en la URL y muestra páginas de 20 resultados con el rango visible y el total. Los controles anterior y siguiente permiten recorrer las páginas; en pantallas estrechas se apilan. Cada fila presenta el código y una sola vez el identificador interno.
